@@ -1,10 +1,8 @@
 package com.office.frontend;
-
-import javafx.application.Platform;
+import backend.controllers.FrontMatterComparisonController;
+import backend.models.FrontmatterComparisonResult;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.concurrent.Service;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -12,16 +10,20 @@ import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
-import org.controlsfx.dialog.ProgressDialog;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.Date;
-import java.util.Optional;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class DashController implements Initializable {
+    private final FrontMatterComparisonController frontMatterComparisonController = new FrontMatterComparisonController();
     @FXML
     public TextField textWorkingPath;
     @FXML
@@ -147,7 +149,7 @@ public class DashController implements Initializable {
                 textField.setText(selectedFile.getName());
                 if(clickedButton.getId().equals("oldRevisionBtn"))
                     oldFile = selectedFile;
-                else if(clickedButton.getId().equals("newRevisionBtn"))
+                else if(clickedButton.getId().equals("newRevisionButton"))
                     newFile = selectedFile;
                 updatePDFFilesSelectedStatus();
             }
@@ -227,10 +229,34 @@ public class DashController implements Initializable {
         pane.setDisable(false);
         pane.setVisible(true);
     }
+    private void showPDFAlertSameFilesSelected() {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Please Select Old and New Revision PDFs");
+        alert.setHeaderText(null);
+        alert.setContentText("U have selected same files for Old and new revisions");
+        alert.showAndWait();
+    }
 
     @FXML
     private void selectNextBtn() {
-
+        if(oldFile.getAbsolutePath().equals(newFile.getAbsolutePath())){
+            oldRevisionFileTextField.clear();
+            newRevisionFileTextField.clear();
+            arePDFFilesSelected.set(false);
+            isWorkingPathSelected.set(false);
+            isDatePicked.set(false);
+            showPDFAlertSameFilesSelected();
+            return;
+        }
+        System.out.println(oldFile.getAbsolutePath());
+        System.out.println(newFile.getAbsolutePath());
+        FrontmatterComparisonResult output = frontMatterComparisonController.processPDF(oldFile, newFile);
+       if(output.getLoiComparisonResult().isPresent())
+           System.out.println(output.getLoiComparisonResult().get());
+        if(output.getLotComparisonResult().isPresent())
+            System.out.println(output.getLotComparisonResult().get());
+        if(output.getTocComparisonResult().isPresent())
+            System.out.println(output.getTocComparisonResult().get());
     }
 
 }
