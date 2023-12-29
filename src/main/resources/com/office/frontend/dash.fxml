@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Line?>
+
+<?import javafx.scene.control.ProgressIndicator?>
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="530.0" prefWidth="969.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.office.frontend.DashController">
+   <children>
+      <Pane style="-fx-background-color: #FFF; -fx-background-radius: 10;">
+         <children>
+            <VBox prefHeight="530.0" prefWidth="207.0" style="-fx-background-color: #E5E5E5;">
+               <children>
+                  <ImageView fitHeight="144.0" fitWidth="207.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@imgs/logo.png" />
+                     </image>
+                  </ImageView>
+                  <Button fx:id="dashboardButton" alignment="BASELINE_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onAction="#enableAndShowPane1" prefHeight="37.0" prefWidth="210.0" stylesheets="@fullpackstyling.css" text="FM Automation Tool">
+                     <padding>
+                        <Insets left="40.0" />
+                     </padding>
+                     <graphic>
+                        <ImageView fitHeight="20.0" fitWidth="26.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@imgs/icons8_details_24px_3.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </Button>
+                  <Button fx:id="discoveryButton" alignment="BASELINE_LEFT" graphicTextGap="10.0" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#enableAndShowPane2" prefHeight="37.0" prefWidth="210.0" stylesheets="@fullpackstyling.css" text="Display FM Changes">
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                     <padding>
+                        <Insets left="40.0" />
+                     </padding>
+                     <graphic>
+                        <ImageView fitHeight="20.0" fitWidth="26.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@imgs/icons8_compass_24px_1.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </Button>
+                  <Button fx:id="reportsButton" alignment="BASELINE_LEFT" graphicTextGap="10.0" layoutX="10.0" layoutY="47.0" mnemonicParsing="false" onAction="#enableAndShowPane3" prefHeight="37.0" prefWidth="210.0" stylesheets="@fullpackstyling.css" text="Tag Generator">
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                     <padding>
+                        <Insets left="40.0" />
+                     </padding>
+                     <graphic>
+                        <ImageView fitHeight="20.0" fitWidth="26.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@imgs/icons8_pie_chart_24px.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </Button>
+                  <Button fx:id="settingsButton" alignment="BASELINE_LEFT" graphicTextGap="10.0" layoutX="10.0" layoutY="84.0" mnemonicParsing="false" prefHeight="37.0" prefWidth="210.0" stylesheets="@fullpackstyling.css" text="Settings">
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                     <padding>
+                        <Insets left="40.0" />
+                     </padding>
+                     <graphic>
+                        <ImageView fitHeight="20.0" fitWidth="26.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@imgs/icons8_settings_32px.png" />
+                           </image>
+                        </ImageView>
+                     </graphic>
+                  </Button>
+                  <Pane prefHeight="254.0" prefWidth="207.0">
+                     <children>
+                        <Line endX="-4.0" endY="-8.0" layoutX="34.0" layoutY="43.0" startX="148.0" startY="-8.0" stroke="#ddd1d1" />
+                     </children>
+                  </Pane>
+               </children>
+            </VBox>
+            <Pane layoutX="207.0" prefHeight="514.0" prefWidth="764.0" style="-fx-background-color: #fff;">
+               <children>
+                  <Pane fx:id="pane1" disable="true" layoutX="31.0" layoutY="35.0" prefHeight="449.0" prefWidth="688.0" visible="false">
+                     <children>
+                        <!-- Content for Dashboard button -->
+                        <TextField fx:id="oldRevisionFileTextField" disable="true" editable="false" layoutX="48.0" layoutY="42.0" prefHeight="25.0" prefWidth="370.0" promptText="Select old revision file" />
+                        <Button fx:id="oldRevisionBtn" layoutX="457.0" layoutY="42.0" onAction="#selectOldRevisionFile" prefHeight="25.0" prefWidth="139.0" text="Select" />
+                        <TextField fx:id="newRevisionFileTextField" disable="true" editable="false" layoutX="48.0" layoutY="91.0" prefHeight="25.0" prefWidth="370.0" promptText="Select new revision file" />
+                        <Button fx:id="newRevisionButton" layoutX="457.0" layoutY="91.0" onAction="#selectNewRevisionFile" prefHeight="25.0" prefWidth="139.0" text="Select" />
+                        <TextField fx:id="textWorkingPath" disable="true" editable="false" layoutX="48.0" layoutY="139.0" prefHeight="25.0" prefWidth="370.0" promptText="Select Working Folder" />
+                        <Button fx:id="btnWorkingPath" onAction="#selectWorkingPath" disable="true" layoutX="457.0" layoutY="139.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="139.0" text="Button" />
+                        <DatePicker fx:id="revdatePicker" onAction="#handleDatePickerAction" disable="true" editable="false" layoutX="48.0" layoutY="184.0" prefHeight="25.0" prefWidth="244.0" promptText="Select Current Revision Date" />
+                        <Button fx:id="nextButton" onAction="#selectNextBtn" layoutX="250.0" layoutY="241.0"  prefHeight="25.0" prefWidth="207.0" text="Next" />
+                     </children>
+                  </Pane>
+                  <Pane fx:id="pane2" disable="true" layoutX="31.0" layoutY="35.0" prefHeight="449.0" prefWidth="688.0" visible="false">
+                     <children>
+                        <!-- Content for Discovery button -->
+                        <TextField fx:id="oldRevisionFileTextField1" layoutX="48.0" layoutY="42.0" prefHeight="25.0" prefWidth="370.0" promptText="Select old revision file1" />
+                        <Button layoutX="457.0" layoutY="91.0" onAction="#selectOldRevisionFile1" prefHeight="25.0" prefWidth="139.0" text="Select" />
+                        <TextField fx:id="newRevisionFileTextField1" layoutX="48.0" layoutY="91.0" prefHeight="25.0" prefWidth="370.0" promptText="Select new revision file1" />
+                        <Button layoutX="457.0" layoutY="42.0" onAction="#selectNewRevisionFile1" prefHeight="25.0" prefWidth="139.0" text="Select" />
+                        <Button layoutX="241.0" layoutY="139.0"  prefHeight="25.0" prefWidth="207.0" text="Next" />
+                     </children>
+                  </Pane>
+                  <Pane fx:id="pane3" disable="true" layoutX="31.0" layoutY="35.0" prefHeight="449.0" prefWidth="688.0" visible="false">
+                     <children>
+                        <!-- Content for Reports button -->
+                        <TextField fx:id="oldRevisionFileTextField2" layoutX="48.0" layoutY="42.0" prefHeight="25.0" prefWidth="370.0" promptText="Select old revision file2" />
+                        <Button layoutX="457.0" layoutY="42.0" onAction="#selectOldRevisionFile2" prefHeight="25.0" prefWidth="139.0" text="Select" />
+                        <TextField fx:id="newRevisionFileTextField2" layoutX="48.0" layoutY="91.0" prefHeight="25.0" prefWidth="370.0" promptText="Select new revision file2" />
+                        <Button layoutX="457.0" layoutY="91.0" onAction="#selectNewRevisionFile2" prefHeight="25.0" prefWidth="139.0" text="Select" />
+                        <Button layoutX="241.0" layoutY="139.0"  prefHeight="25.0" prefWidth="207.0" text="Next" />
+                     </children>
+                  </Pane>
+               </children>
+            </Pane>
+         </children>
+      </Pane>
+   </children>
+</AnchorPane>
