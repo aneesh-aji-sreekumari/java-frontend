@@ -1,6 +1,6 @@
-package backend.multithreading;
-import backend.models.Tuple;
-import backend.services.FrontMatterComparisonService;
+package backend.frontmatterapi.multithreading;
+import backend.frontmatterapi.models.Tuple;
+import backend.frontmatterapi.services.FrontMatterComparisonService;
 import java.io.File;
 import java.util.Optional;
 import java.util.concurrent.Callable;

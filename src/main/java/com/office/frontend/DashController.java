@@ -1,6 +1,6 @@
 package com.office.frontend;
-import backend.controllers.FrontMatterComparisonController;
-import backend.models.FrontmatterComparisonResult;
+import backend.frontmatterapi.controllers.FrontMatterComparisonController;
+import backend.frontmatterapi.models.FrontmatterComparisonResult;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
@@ -18,12 +18,12 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.*;
 
 public class DashController implements Initializable {
     private final FrontMatterComparisonController frontMatterComparisonController = new FrontMatterComparisonController();
+
     @FXML
     public TextField textWorkingPath;
     @FXML
@@ -37,6 +37,20 @@ public class DashController implements Initializable {
     @FXML
     public Button newRevisionButton;
     @FXML
+    public TextField oldRevTextView;
+    @FXML
+    public Button oldRevBtn;
+    @FXML
+    public TextField newRevTextView;
+    @FXML
+    public Button newRevBtn;
+    @FXML
+    public Button getResultBtn;
+    @FXML
+    public TextField txtFileTextField;
+    @FXML
+    public Button generateTagBtn;
+    @FXML
     private Pane pane1;
     @FXML
     private Pane pane2;
@@ -47,39 +61,27 @@ public class DashController implements Initializable {
     private TextField oldRevisionFileTextField;
     @FXML
     private TextField newRevisionFileTextField;
-
-    @FXML
-    private TextField oldRevisionFileTextField1;
-    @FXML
-    private TextField newRevisionFileTextField1;
-
     @FXML
     private TextField oldRevisionFileTextField2;
     @FXML
     private TextField newRevisionFileTextField2;
     private File oldFile;
     private File newFile;
+    private File txtFile;
     private BooleanProperty arePDFFilesSelected = new SimpleBooleanProperty(false);
+    private BooleanProperty arePDFFilesSelectedForPane2 = new SimpleBooleanProperty(false);
     private BooleanProperty isWorkingPathSelected = new SimpleBooleanProperty(false);
     private BooleanProperty isDatePicked = new SimpleBooleanProperty(false);
+    private BooleanProperty isTxtFileSelected = new SimpleBooleanProperty(false);
     @FXML
     private void selectOldRevisionFile(ActionEvent event) {
         handleFileSelection(oldRevisionFileTextField, (Button) event.getSource());
     }
 
+
     @FXML
     private void selectNewRevisionFile(ActionEvent event) {
         handleFileSelection(newRevisionFileTextField, (Button) event.getSource());
-    }
-
-    @FXML
-    private void selectOldRevisionFile1(ActionEvent event) {
-        handleFileSelection(oldRevisionFileTextField1, (Button) event.getSource());
-    }
-
-    @FXML
-    private void selectNewRevisionFile1(ActionEvent event) {
-        handleFileSelection(newRevisionFileTextField1, (Button) event.getSource());
     }
 
     @FXML
@@ -106,18 +108,35 @@ public class DashController implements Initializable {
 
         nextButton.disableProperty().bind(isDatePicked.not());
     }
+    private void bindShowGetResultBtn(){
+
+        getResultBtn.disableProperty().bind(arePDFFilesSelectedForPane2.not());
+    }
+    private void bindShowGenerateTagBtn(){
+
+        generateTagBtn.disableProperty().bind(isTxtFileSelected.not());
+    }
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         enableAndShowPane(pane1);
         bindShowWorkingFolderPathButton();
         bindShowDatePicker();
         bindShowNextButton();
+        bindShowGetResultBtn();
+        bindShowGenerateTagBtn();
     }
     private void updatePDFFilesSelectedStatus() {
         boolean pdfFilesSelected = (isTextFieldNotEmpty(oldRevisionFileTextField)
                 && (isTextFieldNotEmpty(newRevisionFileTextField)));
 
        arePDFFilesSelected.set(pdfFilesSelected);
+
+    }
+    private void updatePDFFilesSelectedStatusForPane2() {
+        boolean pdfFilesSelected = (isTextFieldNotEmpty(oldRevTextView)
+                && (isTextFieldNotEmpty(newRevTextView)));
+
+        arePDFFilesSelectedForPane2.set(pdfFilesSelected);
 
     }
 
@@ -131,6 +150,27 @@ public class DashController implements Initializable {
         isWorkingPathSelected.set(workingPathSelected);
     }
 
+    public void handleTextFileSelection(TextField textField, Button clickedButton){
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select *.txt File");
+        File selectedFile = fileChooser.showOpenDialog(null);
+        if (selectedFile != null) {
+            if (!selectedFile.getName().toLowerCase().endsWith(".txt")) {
+                showTXTAlert();
+            }
+            else {
+                textField.setText(selectedFile.getName());
+                txtFile = selectedFile;
+                updateTxtFileSelectedStatus();
+            }
+        }
+
+    }
+
+    private void updateTxtFileSelectedStatus() {
+        isTxtFileSelected.set(isTextFieldNotEmpty(txtFileTextField));
+    }
+
     private void handleFileSelection(TextField textField, Button clickedButton) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select File");
@@ -141,11 +181,12 @@ public class DashController implements Initializable {
                 showPDFAlert();
             } else {
                 textField.setText(selectedFile.getName());
-                if(clickedButton.getId().equals("oldRevisionBtn"))
+                if(clickedButton.getId().equals("oldRevisionBtn") || clickedButton.getId().equals("oldRevBtn") )
                     oldFile = selectedFile;
-                else if(clickedButton.getId().equals("newRevisionButton"))
+                else if(clickedButton.getId().equals("newRevisionButton") || clickedButton.getId().equals("newRevBtn"))
                     newFile = selectedFile;
                 updatePDFFilesSelectedStatus();
+                updatePDFFilesSelectedStatusForPane2();
             }
         }
     }
@@ -171,13 +212,6 @@ public class DashController implements Initializable {
         }
 
     }
-
-//    private boolean isPDFFilesSelected() {
-//        return arePDFFilesSelected.get() &&
-//                (isTextFieldNotEmpty(oldRevisionFileTextField) || isTextFieldNotEmpty(oldRevisionFileTextField1) || isTextFieldNotEmpty(oldRevisionFileTextField2)) &&
-//                (isTextFieldNotEmpty(newRevisionFileTextField) || isTextFieldNotEmpty(newRevisionFileTextField1) || isTextFieldNotEmpty(newRevisionFileTextField2));
-//    }
-
     private boolean isTextFieldNotEmpty(TextField textField) {
         return !textField.getText().trim().isEmpty();
     }
@@ -187,6 +221,13 @@ public class DashController implements Initializable {
         alert.setTitle("Invalid File Type");
         alert.setHeaderText(null);
         alert.setContentText("Please select a PDF file.");
+        alert.showAndWait();
+    }
+    private void showTXTAlert() {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Invalid File Type");
+        alert.setHeaderText(null);
+        alert.setContentText("Please select a *.txt file.");
         alert.showAndWait();
     }
     private void showPDFAlertToSelectPDFFile() {
@@ -219,7 +260,6 @@ public class DashController implements Initializable {
         pane2.setVisible(false);
         pane3.setDisable(true);
         pane3.setVisible(false);
-
         pane.setDisable(false);
         pane.setVisible(true);
     }
@@ -278,4 +318,50 @@ public class DashController implements Initializable {
         openNewWindowIfNeeded(output.getTocComparisonResult().get(), "Changes in Table Of Contents");
     }
 
+    public void oldRevFileSelect(ActionEvent event) {
+        handleFileSelection(oldRevTextView, (Button) event.getSource());
+    }
+
+    public void newRevFileSelect(ActionEvent event) {
+        handleFileSelection(newRevTextView, (Button) event.getSource());
+    }
+
+    public void getResult(ActionEvent actionEvent) {
+        if(oldFile.getAbsolutePath().equals(newFile.getAbsolutePath())){
+            oldRevisionFileTextField.clear();
+            newRevisionFileTextField.clear();
+            arePDFFilesSelected.set(false);
+            isWorkingPathSelected.set(false);
+            isDatePicked.set(false);
+            showPDFAlertSameFilesSelected();
+            return;
+        }
+        System.out.println(oldFile.getAbsolutePath());
+        System.out.println(newFile.getAbsolutePath());
+        FrontmatterComparisonResult output = frontMatterComparisonController.processPDF(oldFile, newFile);
+        if(output.getLoiComparisonResult().isPresent())
+            System.out.println(output.getLoiComparisonResult().get());
+        if(output.getLotComparisonResult().isPresent())
+            System.out.println(output.getLotComparisonResult().get());
+        if(output.getTocComparisonResult().isPresent())
+            System.out.println(output.getTocComparisonResult().get());
+        openNewWindowIfNeeded(output.getLoiComparisonResult().get(), "Changes in List Of Illustrations");
+        openNewWindowIfNeeded(output.getLotComparisonResult().get(), "Changes in List Of Tables");
+        openNewWindowIfNeeded(output.getTocComparisonResult().get(), "Changes in Table Of Contents");
+    }
+
+    public void selectTxtFile(ActionEvent event) {
+        handleTextFileSelection(txtFileTextField, (Button) event.getSource());
+    }
+
+    public void generateTags(ActionEvent event) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Success");
+        alert.setHeaderText("Output File Saved Successfully");
+        alert.setContentText("The output file is placed in path");
+        alert.showAndWait();
+        txtFile = null;
+        txtFileTextField.clear();
+        isTxtFileSelected.set(false);
+    }
 }

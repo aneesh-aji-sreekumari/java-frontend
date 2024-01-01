@@ -1,4 +1,4 @@
-package backend.models;
+package backend.frontmatterapi.models;
 import java.util.ArrayList;
 public class Tuple {
     private ArrayList<String> tocList;

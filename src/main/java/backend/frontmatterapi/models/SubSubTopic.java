@@ -1,4 +1,4 @@
-package backend.models;
+package backend.frontmatterapi.models;
 
 public class SubSubTopic {
     public String number;

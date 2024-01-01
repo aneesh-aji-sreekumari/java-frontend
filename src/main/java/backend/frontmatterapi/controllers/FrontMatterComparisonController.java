@@ -1,14 +1,14 @@
-package backend.controllers;
+package backend.frontmatterapi.controllers;
 
-import backend.models.FrontmatterComparisonResult;
-import backend.models.LoiPageblockItem;
-import backend.models.LotPageblockItem;
-import backend.models.Tuple;
-import backend.multithreading.TupleThread;
-import backend.services.FrontMatterComparisonService;
-import backend.services.LOIComparisonService;
-import backend.services.LOTComparisonService;
-import backend.services.TOCComparisonService;
+import backend.frontmatterapi.models.FrontmatterComparisonResult;
+import backend.frontmatterapi.models.LoiPageblockItem;
+import backend.frontmatterapi.models.LotPageblockItem;
+import backend.frontmatterapi.models.Tuple;
+import backend.frontmatterapi.multithreading.TupleThread;
+import backend.frontmatterapi.services.FrontMatterComparisonService;
+import backend.frontmatterapi.services.LOIComparisonService;
+import backend.frontmatterapi.services.LOTComparisonService;
+import backend.frontmatterapi.services.TOCComparisonService;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.ExecutorService;

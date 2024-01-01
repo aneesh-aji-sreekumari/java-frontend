@@ -1,4 +1,4 @@
-package backend.models;
+package backend.frontmatterapi.models;
 
 import java.util.ArrayList;
 import java.util.Optional;

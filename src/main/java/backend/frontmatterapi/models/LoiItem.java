@@ -1,4 +1,4 @@
-package backend.models;
+package backend.frontmatterapi.models;
 
 import lombok.Getter;
 import lombok.Setter;

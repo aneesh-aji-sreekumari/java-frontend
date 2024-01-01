@@ -1,6 +1,6 @@
-package backend.services;
+package backend.frontmatterapi.services;
 
-import backend.models.Tuple;
+import backend.frontmatterapi.models.Tuple;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;

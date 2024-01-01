@@ -1,14 +1,13 @@
-package backend.services;
-
-import backend.models.LoiItem;
-import backend.models.LoiPageblockItem;
+package backend.frontmatterapi.services;
+import backend.frontmatterapi.models.LotItem;
+import backend.frontmatterapi.models.LotPageblockItem;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-public class LOIComparisonService {
+public class LOTComparisonService {
     public Optional<ArrayList<String>> filterUnwantedLinesFromLatestLotLoi(List<String> lines){
         int N = lines.size();
         ArrayList<String> finalList = new ArrayList<>();
@@ -35,9 +34,9 @@ public class LOIComparisonService {
     }
     /* Getting pageNumber, pageblock, tableNumber and title from firstLine, pagenumber will
     be empty if the title goes to multiline */
-    public LoiItem getNumberTitleAndPageNumberofFirstLine(String s){
+    public LotItem getNumberTitleAndPageNumberofFirstLine(String s){
         int N = s.length();
-        LoiItem loiItem = new LoiItem();
+        LotItem lotItem = new LotItem();
         StringBuilder sb = new StringBuilder();
         boolean isTitleFound =  false;
         int i=0;
@@ -52,8 +51,8 @@ public class LOIComparisonService {
         }
         while (i<N){
             if(s.charAt(i) == ' ' && (!sb.isEmpty())){
-                loiItem.setFigureNumber(sb.toString().trim());
-                loiItem.setPageblock(getPageBlock(loiItem.getFigureNumber()));
+                lotItem.setTableNumber(sb.toString().trim());
+                lotItem.setPageblock(getPageBlock(lotItem.getTableNumber()));
                 sb = new StringBuilder();
                 i= i+1;
                 break;
@@ -65,7 +64,7 @@ public class LOIComparisonService {
         while(i<N){
             char ch = s.charAt(i);
             if(ch == '.' && !sb.isEmpty()){
-                loiItem.setFigureTitle(sb.toString().trim());
+                lotItem.setTableTitle(sb.toString().trim());
                 sb = new StringBuilder();
                 isTitleFound = true;
             }
@@ -81,18 +80,18 @@ public class LOIComparisonService {
         }
         if(!sb.isEmpty()){
             if(isTitleFound == false){
-                loiItem.setFigureTitle(sb.toString().trim());
+                lotItem.setTableTitle(sb.toString().trim());
             }
             else{
-                loiItem.setPageNumber(sb.toString().trim());
+                lotItem.setPageNumber(sb.toString().trim());
             }
         }
-        /* If loiItem.getPageNumber == null : Additional check to find whether the last characters of the String is
+        /* If lotItem.getPageNumber == null : Additional check to find whether the last characters of the String is
         pagenumber or is it part of table title  */
 
-        if(loiItem.getPageNumber() == null){
+        if(lotItem.getPageNumber() == null){
             sb = new StringBuilder();
-            String str = loiItem.getFigureTitle();
+            String str = lotItem.getTableTitle();
             N = str.length();
             int idx = N-1;
             for(i=N-1; i>=0; i--){
@@ -106,23 +105,23 @@ public class LOIComparisonService {
                 }
             }
             if(sb.isEmpty())
-                return loiItem;
+                return lotItem;
             try{
                 sb = sb.reverse();
                 int num = Integer.parseInt(sb.toString());
-                if(loiItem.getPageblock().equals(getPageBlock(sb.toString()))){
-                    loiItem.setFigureTitle(loiItem.getFigureTitle().substring(0, idx+1).trim());
-                    loiItem.setPageNumber(sb.toString());
+                if(lotItem.getPageblock().equals(getPageBlock(sb.toString()))){
+                    lotItem.setTableTitle(lotItem.getTableTitle().substring(0, idx+1).trim());
+                    lotItem.setPageNumber(sb.toString());
                 }
                 else
-                    return loiItem;
+                    return lotItem;
             } catch (NumberFormatException e) {
-                return loiItem;
+                return lotItem;
             }
         }
 
 
-        return loiItem;
+        return lotItem;
     }
     public String getPageBlock(String str){
         if(str.startsWith("IPL"))
@@ -224,7 +223,7 @@ public class LOIComparisonService {
             return Optional.of(null);
         ArrayList<String> ans = new ArrayList<>();
         ans.add(preprocessed.get(0));
-        LoiItem prevLoiItem = getNumberTitleAndPageNumberofFirstLine(preprocessed.get(0));
+        LotItem prevLoiItem = getNumberTitleAndPageNumberofFirstLine(preprocessed.get(0));
         for(int i=1; i<N; i++){
             if(prevLoiItem.getPageNumber() == null){
                 ans.set(ans.size()-1, ans.get(ans.size()-1)+" " + preprocessed.get(i));
@@ -237,59 +236,59 @@ public class LOIComparisonService {
 
         return Optional.of(ans);
     }
-//    public Optional<ArrayList<LoiPageblockItem>> getPageblockwiseIllustrations(ArrayList<String> formattedLoi){
+    //    public Optional<ArrayList<LoiPageblockItem>> getPageblockwiseIllustrations(ArrayList<String> formattedLoi){
 //        ArrayList<LoiPageblockItem> ans = new ArrayList<>();
 //        LoiPageblockItem prev = null;
 //        for(int i=0; i<formattedLoi.size(); i++){
 //            String str = formattedLoi.get(i);
-//            LoiItem loiItem = getNumberTitleAndPageNumberofFirstLine(str);
-//            if(prev == null || !prev.getPageblockName().equals(loiItem.getPageblock())){
-//               LoiPageblockItem loiPageblockItem = new LoiPageblockItem(loiItem.getPageblock());
-//               loiPageblockItem.getListOfIllustrations().add(loiItem);
+//            LotItem lotItem = getNumberTitleAndPageNumberofFirstLine(str);
+//            if(prev == null || !prev.getPageblockName().equals(lotItem.getPageblock())){
+//               LoiPageblockItem loiPageblockItem = new LoiPageblockItem(lotItem.getPageblock());
+//               loiPageblockItem.getListOfIllustrations().add(lotItem);
 //               prev = loiPageblockItem;
 //               ans.add(prev);
 //            }
 //            else
-//                prev.getListOfIllustrations().add(loiItem);
+//                prev.getListOfIllustrations().add(lotItem);
 //        }
 //        return Optional.of(ans);
 //    }
-    public Optional<HashMap<String, LoiPageblockItem>> getPageblockwiseIllustrations(ArrayList<String> formattedLoi){
-        HashMap<String, LoiPageblockItem> ans = new HashMap<>();
-        for(int i=0; i<formattedLoi.size(); i++){
-            String str = formattedLoi.get(i);
-            LoiItem loiItem = getNumberTitleAndPageNumberofFirstLine(str);
-            if(ans.containsKey(loiItem.getPageblock())){
-                ans.get(loiItem.getPageblock()).getListOfIllustrations().add(loiItem);
+    public Optional<HashMap<String, LotPageblockItem>> getPageblockwiseTables(ArrayList<String> formattedLot){
+        HashMap<String, LotPageblockItem> ans = new HashMap<>();
+        for(int i=0; i<formattedLot.size(); i++){
+            String str = formattedLot.get(i);
+            LotItem lotItem = getNumberTitleAndPageNumberofFirstLine(str);
+            if(ans.containsKey(lotItem.getPageblock())){
+                ans.get(lotItem.getPageblock()).getListOfTables().add(lotItem);
             }
             else{
-                LoiPageblockItem loiPageblockItem = new LoiPageblockItem(loiItem.getPageblock());
-                loiPageblockItem.getListOfIllustrations().add(loiItem);
-                ans.put(loiItem.getPageblock(), loiPageblockItem);
+                LotPageblockItem lotPageblockItem = new LotPageblockItem(lotItem.getPageblock());
+                lotPageblockItem.getListOfTables().add(lotItem);
+                ans.put(lotItem.getPageblock(), lotPageblockItem);
             }
         }
         return Optional.of(ans);
     }
-    public Optional<ArrayList<String>> compareLoi(HashMap<String, LoiPageblockItem> oldLoi, HashMap<String, LoiPageblockItem> newLoi){
+    public Optional<ArrayList<String>> compareLot(HashMap<String, LotPageblockItem> oldLot, HashMap<String, LotPageblockItem> newLot){
         ArrayList<String> ans = new ArrayList<>();
-        for(String s: newLoi.keySet()){
-            if(oldLoi.containsKey(s)){
-                LoiPageblockItem oldLoiPageblockItem = oldLoi.get(s);
-                LoiPageblockItem newLoiPageblockItem = newLoi.get(s);
-                ArrayList<LoiItem> oldListOfIllus = oldLoiPageblockItem.getListOfIllustrations();
-                ArrayList<LoiItem> newListOfIllus = newLoiPageblockItem.getListOfIllustrations();
-                int n = oldListOfIllus.size();
-                int m = newListOfIllus.size();
+        for(String s: newLot.keySet()){
+            if(oldLot.containsKey(s)){
+                LotPageblockItem oldLotPageblockItem = oldLot.get(s);
+                LotPageblockItem newLotPageblockItem = newLot.get(s);
+                ArrayList<LotItem> oldListOfTables = oldLotPageblockItem.getListOfTables();
+                ArrayList<LotItem> newListOfTables = newLotPageblockItem.getListOfTables();
+                int n = oldListOfTables.size();
+                int m = newListOfTables.size();
                 int i=0, j=0;
                 while(i<n && j<m){
-                    LoiItem loiItemOld = oldListOfIllus.get(i);
-                    LoiItem loiItemNew = newListOfIllus.get(j);
-                    if(oldListOfIllus.get(i).getFigureTitle().equals(newListOfIllus.get(j).getFigureTitle())){
-                        if(!oldListOfIllus.get(i).getPageNumber().equals(newListOfIllus.get(j).getPageNumber())){
+                    LotItem loiItemOld = oldListOfTables.get(i);
+                    LotItem loiItemNew = newListOfTables.get(j);
+                    if(oldListOfTables.get(i).getTableTitle().equals(newListOfTables.get(j).getTableTitle())){
+                        if(!oldListOfTables.get(i).getPageNumber().equals(newListOfTables.get(j).getPageNumber())){
                             ans.add("Add Revbar for: {"
                                     + loiItemNew.getPageblock()
-                                    +"} <" + loiItemNew.getFigureNumber() +"> |"
-                                    + loiItemNew.getFigureTitle() + "| Page number got changed from " +
+                                    +"} <" + loiItemNew.getTableNumber() +"> |"
+                                    + loiItemNew.getTableTitle() + "| Page number got changed from " +
                                     loiItemOld.getPageNumber()+
                                     " to "
                                     + loiItemNew.getPageNumber() + ".");
@@ -299,36 +298,35 @@ public class LOIComparisonService {
                     else{
                         ans.add("Add Revbar for: {"
                                 + loiItemNew.getPageblock()
-                                +"} Title changed from " +loiItemOld.getFigureNumber() + " " + loiItemOld.getFigureTitle() +
-                                " to <" + loiItemNew.getFigureNumber() +"> |"
-                                + loiItemNew.getFigureTitle() + "|.");
+                                +"} Title changed from " +loiItemOld.getTableNumber() + " " + loiItemOld.getTableTitle() +
+                                " to <" + loiItemNew.getTableNumber() +"> |"
+                                + loiItemNew.getTableTitle() + "|.");
                     }
                     i++;
                     j++;
 
                 }
                 while(j<m){
-                    LoiItem loiItem = newListOfIllus.get(j);
+                    LotItem lotItem = newListOfTables.get(j);
                     ans.add("Add Revbar for: {"
-                            + loiItem.getPageblock()
-                            +"} Fig.No: <" + loiItem.getFigureNumber() +"> |"
-                            + loiItem.getFigureTitle() + "|.");
+                            + lotItem.getPageblock()
+                            +"} Fig.No: <" + lotItem.getTableNumber() +"> |"
+                            + lotItem.getTableTitle() + "|.");
                     j++;
                 }
 
             }
             else{
-                LoiPageblockItem loiPageblockItem = newLoi.get(s);
-                ArrayList<LoiItem> listOfIllustrations = loiPageblockItem.getListOfIllustrations();
-                for(LoiItem loiItem: listOfIllustrations){
+                LotPageblockItem lotPageblockItem = newLot.get(s);
+                ArrayList<LotItem> listOfTables = lotPageblockItem.getListOfTables();
+                for(LotItem lotItem: listOfTables){
                     ans.add("Add Revbar for: {"
-                            + loiItem.getPageblock()
-                            +"} Fig.No: <" + loiItem.getFigureNumber() +"> |"
-                            + loiItem.getFigureTitle() + "|.");
+                            + lotItem.getPageblock()
+                            +"} Fig.No: <" + lotItem.getTableNumber() +"> |"
+                            + lotItem.getTableTitle() + "|.");
                 }
             }
         }
         return Optional.of(ans);
     }
 }
-
