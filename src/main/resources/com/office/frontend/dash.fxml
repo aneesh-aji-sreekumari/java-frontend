@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.DatePicker?>
@@ -11,7 +10,6 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Line?>
 
-<?import javafx.scene.control.ProgressIndicator?>
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="530.0" prefWidth="969.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.office.frontend.DashController">
    <children>
       <Pane style="-fx-background-color: #FFF; -fx-background-radius: 10;">
@@ -97,9 +95,9 @@
                         <TextField fx:id="newRevisionFileTextField" disable="true" editable="false" layoutX="48.0" layoutY="91.0" prefHeight="25.0" prefWidth="370.0" promptText="Select new revision file" />
                         <Button fx:id="newRevisionButton" layoutX="457.0" layoutY="91.0" onAction="#selectNewRevisionFile" prefHeight="25.0" prefWidth="139.0" text="Select" />
                         <TextField fx:id="textWorkingPath" disable="true" editable="false" layoutX="48.0" layoutY="139.0" prefHeight="25.0" prefWidth="370.0" promptText="Select Working Folder" />
-                        <Button fx:id="btnWorkingPath" onAction="#selectWorkingPath" disable="true" layoutX="457.0" layoutY="139.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="139.0" text="Button" />
-                        <DatePicker fx:id="revdatePicker" onAction="#handleDatePickerAction" disable="true" editable="false" layoutX="48.0" layoutY="184.0" prefHeight="25.0" prefWidth="244.0" promptText="Select Current Revision Date" />
-                        <Button fx:id="nextButton" onAction="#selectNextBtn" layoutX="250.0" layoutY="241.0"  prefHeight="25.0" prefWidth="207.0" text="Next" />
+                        <Button fx:id="btnWorkingPath" disable="true" layoutX="457.0" layoutY="139.0" mnemonicParsing="false" onAction="#selectWorkingPath" prefHeight="25.0" prefWidth="139.0" text="Button" />
+                        <DatePicker fx:id="revdatePicker" disable="true" editable="false" layoutX="48.0" layoutY="184.0" onAction="#handleDatePickerAction" prefHeight="25.0" prefWidth="244.0" promptText="Select Current Revision Date" />
+                        <Button fx:id="nextButton" layoutX="250.0" layoutY="241.0" onAction="#selectNextBtn" prefHeight="25.0" prefWidth="207.0" text="Next" />
                      </children>
                   </Pane>
                   <Pane fx:id="pane2" disable="true" layoutX="31.0" layoutY="35.0" prefHeight="449.0" prefWidth="688.0" visible="false">
@@ -109,7 +107,7 @@
                         <Button layoutX="457.0" layoutY="91.0" onAction="#selectOldRevisionFile1" prefHeight="25.0" prefWidth="139.0" text="Select" />
                         <TextField fx:id="newRevisionFileTextField1" layoutX="48.0" layoutY="91.0" prefHeight="25.0" prefWidth="370.0" promptText="Select new revision file1" />
                         <Button layoutX="457.0" layoutY="42.0" onAction="#selectNewRevisionFile1" prefHeight="25.0" prefWidth="139.0" text="Select" />
-                        <Button layoutX="241.0" layoutY="139.0"  prefHeight="25.0" prefWidth="207.0" text="Next" />
+                        <Button layoutX="241.0" layoutY="139.0" prefHeight="25.0" prefWidth="207.0" text="Next" />
                      </children>
                   </Pane>
                   <Pane fx:id="pane3" disable="true" layoutX="31.0" layoutY="35.0" prefHeight="449.0" prefWidth="688.0" visible="false">
@@ -119,7 +117,7 @@
                         <Button layoutX="457.0" layoutY="42.0" onAction="#selectOldRevisionFile2" prefHeight="25.0" prefWidth="139.0" text="Select" />
                         <TextField fx:id="newRevisionFileTextField2" layoutX="48.0" layoutY="91.0" prefHeight="25.0" prefWidth="370.0" promptText="Select new revision file2" />
                         <Button layoutX="457.0" layoutY="91.0" onAction="#selectNewRevisionFile2" prefHeight="25.0" prefWidth="139.0" text="Select" />
-                        <Button layoutX="241.0" layoutY="139.0"  prefHeight="25.0" prefWidth="207.0" text="Next" />
+                        <Button layoutX="241.0" layoutY="139.0" prefHeight="25.0" prefWidth="207.0" text="Next" />
                      </children>
                   </Pane>
                </children>

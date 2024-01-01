@@ -5,22 +5,22 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.time.LocalDate;
-import java.util.Date;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class DashController implements Initializable {
     private final FrontMatterComparisonController frontMatterComparisonController = new FrontMatterComparisonController();
@@ -59,14 +59,9 @@ public class DashController implements Initializable {
     private TextField newRevisionFileTextField2;
     private File oldFile;
     private File newFile;
-    private Date revisionDate;
-
-
     private BooleanProperty arePDFFilesSelected = new SimpleBooleanProperty(false);
     private BooleanProperty isWorkingPathSelected = new SimpleBooleanProperty(false);
     private BooleanProperty isDatePicked = new SimpleBooleanProperty(false);
-    private BooleanProperty isNextSelected = new SimpleBooleanProperty(false);
-
     @FXML
     private void selectOldRevisionFile(ActionEvent event) {
         handleFileSelection(oldRevisionFileTextField, (Button) event.getSource());
@@ -111,7 +106,6 @@ public class DashController implements Initializable {
 
         nextButton.disableProperty().bind(isDatePicked.not());
     }
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         enableAndShowPane(pane1);
@@ -237,6 +231,28 @@ public class DashController implements Initializable {
         alert.showAndWait();
     }
 
+    private void openNewWindowIfNeeded(List<String> items, String title) {
+        if (!items.isEmpty()) {
+            try {
+                FXMLLoader loader = new FXMLLoader(DashController.class.getResource("jfx-list-view.fxml"));
+                Stage newWindowStage = new Stage();
+                //newWindowStage.setFullScreen(true);
+                newWindowStage.setMaximized(true);
+                newWindowStage.setTitle(title);
+                newWindowStage.initModality(Modality.APPLICATION_MODAL);
+
+                Scene scene = new Scene(loader.load());
+                newWindowStage.setScene(scene);
+
+                ListViewController newWindowController = loader.getController();
+                newWindowController.setItems(items);
+
+                newWindowStage.show();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
     @FXML
     private void selectNextBtn() {
         if(oldFile.getAbsolutePath().equals(newFile.getAbsolutePath())){
@@ -257,6 +273,9 @@ public class DashController implements Initializable {
             System.out.println(output.getLotComparisonResult().get());
         if(output.getTocComparisonResult().isPresent())
             System.out.println(output.getTocComparisonResult().get());
+        openNewWindowIfNeeded(output.getLoiComparisonResult().get(), "Changes in List Of Illustrations");
+        openNewWindowIfNeeded(output.getLotComparisonResult().get(), "Changes in List Of Tables");
+        openNewWindowIfNeeded(output.getTocComparisonResult().get(), "Changes in Table Of Contents");
     }
 
 }

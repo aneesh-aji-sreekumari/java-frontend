@@ -42,13 +42,13 @@ public  Optional<Tuple> readPDF(File file) throws IOException {
                 else if(line.contains("LIST OF TABLES"))
                     isLot = true;
                 if(isToc){
-                    tuple.getTocList().add(line);
+                    tuple.getTocList().add(line.trim());
                 }
                 else if(isLoi){
-                    tuple.getLoiList().add(line);
+                    tuple.getLoiList().add(line.trim());
                 }
                 else if(isLot){
-                    tuple.getLotList().add(line);
+                    tuple.getLotList().add(line.trim());
                 }
             }
         }

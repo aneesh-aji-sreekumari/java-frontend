@@ -47,7 +47,7 @@ public class FrontMatterComparisonController {
             Optional<Tuple> oldFile = promiseOfOld.get();
             Optional<Tuple> newFile = promiseOfNew.get();
             if(oldFile.isEmpty() || newFile.isEmpty())
-                throw new InputMismatchException("There was some issues with the selected Files");
+                return frontmatterComparisonResult;
 
             /* Raw lines extracted from PDF from TOC, LOI, LOT Respectively */
             Optional<List<String>> oldTocList = Optional.of(oldFile.get().getTocList());

@@ -52,28 +52,59 @@ public class TOCComparisonService {
         return ans;
     }
 
-    public String[] extractTOCInfoFromSubOrSubsubTopicString(String s) {
-        String[] ans = new String[3];
-        StringBuilder sb = new StringBuilder();
-        int idx = 0;
-        for (int i = 0; i < s.length(); i++) {
-            if (s.charAt(i) != ' ' && s.charAt(i) != '.')
-                sb.append(s.charAt(i));
-            else if (s.charAt(i) == ' ' && !sb.isEmpty())
-                sb.append(s.charAt(i));
-            else if (s.charAt(i) == '.') {
-                if (sb.isEmpty())
-                    continue;
-                ans[idx] = sb.toString().trim();
-                idx++;
-                sb = new StringBuilder();
-            }
-
+//    public String[] extractTOCInfoFromSubOrSubsubTopicString(String s) {
+//        String[] ans = new String[3];
+//        StringBuilder sb = new StringBuilder();
+//        int idx = 0;
+//        for (int i = 0; i < s.length(); i++) {
+//            if (s.charAt(i) != ' ' && s.charAt(i) != '.')
+//                sb.append(s.charAt(i));
+//            else if (s.charAt(i) == ' ' && !sb.isEmpty())
+//                sb.append(s.charAt(i));
+//            else if (s.charAt(i) == '.') {
+//                if (sb.isEmpty())
+//                    continue;
+//                ans[idx] = sb.toString().trim();
+//                idx++;
+//                sb = new StringBuilder();
+//            }
+//
+//        }
+//        if (!sb.isEmpty())
+//            ans[idx] = sb.toString().trim();
+//        return ans;
+//    }
+public String[] extractTOCInfoFromSubOrSubsubTopicString(String s) {
+        int N = s.length();
+    String[] ans = new String[3];
+    StringBuilder sb = new StringBuilder();
+    int i=0;
+    while(i<N){
+        if(s.charAt(i) == '.'){
+            ans[0] = sb.toString();
+            i= i+2;
+            sb = new StringBuilder();
+            break;
         }
-        if (!sb.isEmpty())
-            ans[idx] = sb.toString().trim();
-        return ans;
+        sb.append(s.charAt(i));
+        i++;
     }
+    int j = N-1;
+    while(j>=0){
+        if(s.charAt(j) == ' '){
+            ans[2] = sb.reverse().toString();
+            j--;
+            while(s.charAt(j) == '.'){
+                j--;
+            }
+            ans[1] = s.substring(i, j+1);
+            break;
+        }
+        sb.append(s.charAt(j));
+        j--;
+    }
+    return ans;
+}
 
     public int isPageblockTitle(String s) {
         String[] listOfPageBlocks = new String[]{"INTRODUCTION", "DESCRIPTION AND OPERATION", "TESTING AND FAULT",
@@ -87,13 +118,29 @@ public class TOCComparisonService {
         }
         return 0;
     }
-
+    private static boolean matchesPattern(String input, String patternToMatch) {
+        // Escape any special characters in the pattern
+        return input.matches(patternToMatch);
+    }
+    private boolean notArequiredLine(String s){
+        int N = s.length();
+        if(s.contains("VOLUME") || s.contains("cover page") || s.contains("TOC"))
+            return true;
+        if(s.contains(".") || s.contains("INTRO-"))
+            return false;
+        if((N >= 4) && ((matchesPattern(s.substring(N-2, N), " \\d{1}")
+        || matchesPattern(s.substring(N-3, N), " \\d{2}") || matchesPattern(s.substring(N-4, N), " \\d{4}"))))
+            return false;
+        if(N>=5 && matchesPattern(s.substring(N-2, N), " \\d{4}"))
+            return false;
+        return true;
+    }
     public Optional<ArrayList<String>> filterUnwantedLinesFromLatestPdf(List<String> lines) {
         int N = lines.size();
         ArrayList<String> finalList = new ArrayList<>();
         for (int i = 0; i < N; i++) {
             String s = lines.get(i);
-            if (s.contains("cover page") || s.contains("TOC") || !s.contains("."))
+            if (notArequiredLine(s.trim()))
                 continue;
             finalList.add(s);
         }
@@ -147,6 +194,77 @@ public class TOCComparisonService {
     }
 
     //Comparing old and new TOC and getting the differences
+    public Optional<ArrayList<String>> compareOldAndNewTocForViewing(ArrayList<PageBlock> oldToc, ArrayList<PageBlock> newToc) {
+        ArrayList<String> ans = new ArrayList<>();
+        int N = oldToc.size();
+        for (int i = 0; i < N; i++) {
+            PageBlock oldPageBlock = oldToc.get(i);
+            PageBlock newPageBlock = newToc.get(i);
+            ArrayList<SubTopic> oldSubTopicList = oldPageBlock.subTopicList;
+            ArrayList<SubTopic> newSubTopicList = newPageBlock.subTopicList;
+            int oldLen = oldSubTopicList.size();
+            int newLen = newSubTopicList.size();
+            int j = 0, k = 0;
+            while (j < oldLen && k < newLen) {
+                SubTopic oldSubTopic = oldSubTopicList.get(j);
+                SubTopic newSubTopic = newSubTopicList.get(k);
+                if (oldSubTopic.subject.equals(newSubTopic.subject)) {
+                    if (!oldSubTopic.pageNumber.equals(newSubTopic.pageNumber)) {
+                        ans.add("Add Revbar for : " + newPageBlock.pageBlockName + " " + newSubTopic.number + ". " + newSubTopic.subject
+                                + " Page number got changed from " + oldSubTopic.pageNumber + " to " + newSubTopic.pageNumber);
+                    }
+                } else {
+                    ans.add("Add Revbar for : " + newPageBlock.pageBlockName + ": Title Description changed from " + oldSubTopic.number + ". " +
+                            oldSubTopic.subject + " to " + newSubTopic.number + ". " + newSubTopic.subject);
+                }
+                ArrayList<SubSubTopic> oldSubSubTopicList = oldSubTopic.subSubTopicList;
+                ArrayList<SubSubTopic> newSubSubTopicList = newSubTopic.subSubTopicList;
+                int x = oldSubSubTopicList.size();
+                int y = newSubSubTopicList.size();
+                int l = 0, m = 0;
+                while (l < x && m < y) {
+                    SubSubTopic oldSubSubTopic = oldSubSubTopicList.get(l);
+                    SubSubTopic newSubSubTopic = newSubSubTopicList.get(m);
+                    if (oldSubSubTopic.subject.equals(newSubSubTopic.subject)) {
+                        if (!oldSubSubTopic.pageNumber.equals(newSubSubTopic.pageNumber)) {
+                            ans.add("Add Revbar for : " + newPageBlock.pageBlockName + " " + newSubTopic.number + ". " +
+                                    " " + newSubSubTopic.number + ". " + newSubSubTopic.subject
+                                    + " : Page number got changed from " + oldSubSubTopic.pageNumber + " to " + newSubSubTopic.pageNumber);
+                        }
+                    } else {
+                        ans.add("Add Revbar for : " + newPageBlock.pageBlockName + " " + newSubTopic.number + ". " +
+                                " : Title Description changed from " + oldSubSubTopic.number + ". " +
+                                oldSubSubTopic.subject + " to " + newSubSubTopic.number + ". " + newSubSubTopic.subject);
+                    }
+                    l++;
+                    m++;
+                }
+                while (m < y) {
+                    SubSubTopic newSubSubTopic = newSubSubTopicList.get(m);
+                    ans.add("Add Revbar for : newly added title " + newPageBlock.pageBlockName + " " + newSubTopic.number + ". "
+                            + newSubSubTopic.number + ". " + newSubSubTopic.subject);
+                    m++;
+                }
+                j++;
+                k++;
+            }
+            while (k < newLen) {
+                SubTopic newSubTopic = newSubTopicList.get(k);
+                ans.add("Add Revbar for : newly added title " + newPageBlock.pageBlockName + " " + newSubTopic.number + ". "
+                        + newSubTopic.subject);
+                ArrayList<SubSubTopic> newSubSubTopicList = newSubTopic.subSubTopicList;
+                int len = newSubSubTopicList.size();
+                for (int t = 0; t < len; t++) {
+                    SubSubTopic newSubSubTopic = newSubSubTopicList.get(t);
+                    ans.add("Add Revbar for : newly added title " + newPageBlock.pageBlockName + " " + newSubTopic.number + ". "
+                            + newSubSubTopic.number + ". " + newSubSubTopic.subject);
+                }
+                k++;
+            }
+
+        }
+        return Optional.of(ans);
+    }
     public Optional<ArrayList<String>> compareOldAndNewToc(ArrayList<PageBlock> oldToc, ArrayList<PageBlock> newToc) {
         ArrayList<String> ans = new ArrayList<>();
         int N = oldToc.size();
