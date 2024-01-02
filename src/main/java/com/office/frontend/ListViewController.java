@@ -1,16 +1,22 @@
 package com.office.frontend;
 
+import backend.frontmatterapi.models.DownloadResults;
 import com.jfoenix.controls.JFXListView;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.Border;
 import javafx.scene.paint.Color;
 import javafx.util.Callback;
+import org.controlsfx.control.action.Action;
 
 import java.util.List;
 
 public class ListViewController {
+    @FXML
+    public Button downloadButton;
     @FXML
     private JFXListView<String> newWindowListView;
 
@@ -44,6 +50,10 @@ public class ListViewController {
 
     public void setItems(List<String> items) {
         newWindowListView.getItems().setAll(items);
+    }
+    @FXML
+    public void downloadAsTxtFile(ActionEvent event){
+        DownloadResults downloadResults = DashController.downloadResults;
     }
 
     // Other methods and event handlers

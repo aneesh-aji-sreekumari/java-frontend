@@ -1,5 +1,6 @@
 package backend.frontmatterapi.services;
 
+import backend.frontmatterapi.models.FmChangeItem;
 import backend.frontmatterapi.models.LoiItem;
 import backend.frontmatterapi.models.LoiPageblockItem;
 import java.util.ArrayList;
@@ -329,6 +330,75 @@ public class LOIComparisonService {
             }
         }
         return Optional.of(ans);
+    }
+    public void compareLoiAutomation(HashMap<String, LoiPageblockItem> oldLoi, HashMap<String, LoiPageblockItem> newLoi){
+        ArrayList<String> ans = new ArrayList<>();
+        for(String s: newLoi.keySet()){
+            if(oldLoi.containsKey(s)){
+                LoiPageblockItem oldLoiPageblockItem = oldLoi.get(s);
+                LoiPageblockItem newLoiPageblockItem = newLoi.get(s);
+                ArrayList<LoiItem> oldListOfIllus = oldLoiPageblockItem.getListOfIllustrations();
+                ArrayList<LoiItem> newListOfIllus = newLoiPageblockItem.getListOfIllustrations();
+                int n = oldListOfIllus.size();
+                int m = newListOfIllus.size();
+                int i=0, j=0;
+                while(i<n && j<m){
+                    LoiItem loiItemOld = oldListOfIllus.get(i);
+                    LoiItem loiItemNew = newListOfIllus.get(j);
+                    if(oldListOfIllus.get(i).getFigureTitle().equals(newListOfIllus.get(j).getFigureTitle())){
+                        if(!oldListOfIllus.get(i).getPageNumber().equals(newListOfIllus.get(j).getPageNumber())){
+                            ans.add("Add Revbar for: {"
+                                    + loiItemNew.getPageblock()
+                                    +"} <" + loiItemNew.getFigureNumber() +"> |"
+                                    + loiItemNew.getFigureTitle() + "| Page number got changed from " +
+                                    loiItemOld.getPageNumber()+
+                                    " to "
+                                    + loiItemNew.getPageNumber() + ".");
+                        }
+
+                    }
+                    else{
+                        ans.add("Add Revbar for: {"
+                                + loiItemNew.getPageblock()
+                                +"} Title changed from " +loiItemOld.getFigureNumber() + " " + loiItemOld.getFigureTitle() +
+                                " to <" + loiItemNew.getFigureNumber() +"> |"
+                                + loiItemNew.getFigureTitle() + "|.");
+                    }
+                    i++;
+                    j++;
+
+                }
+                while(j<m){
+                    LoiItem loiItem = newListOfIllus.get(j);
+                    ans.add("Add Revbar for: {"
+                            + loiItem.getPageblock()
+                            +"} Fig.No: <" + loiItem.getFigureNumber() +"> |"
+                            + loiItem.getFigureTitle() + "|.");
+                    j++;
+                }
+
+            }
+            else{
+                LoiPageblockItem loiPageblockItem = newLoi.get(s);
+                ArrayList<LoiItem> listOfIllustrations = loiPageblockItem.getListOfIllustrations();
+                for(LoiItem loiItem: listOfIllustrations){
+                    ans.add("Add Revbar for: {"
+                            + loiItem.getPageblock()
+                            +"} Fig.No: <" + loiItem.getFigureNumber() +"> |"
+                            + loiItem.getFigureTitle() + "|.");
+                }
+            }
+        }
+    }
+    public void addIntoTheMap(HashMap<String, ArrayList<FmChangeItem>> map, FmChangeItem fmChangeItem){
+        if(map.containsKey(fmChangeItem.getPageblock())){
+            map.get(fmChangeItem.getPageblock()).add(fmChangeItem);
+        }
+        else{
+            ArrayList<FmChangeItem> list = new ArrayList<>();
+            list.add(fmChangeItem);
+            map.put(fmChangeItem.getPageblock(), list);
+        }
     }
 }
 

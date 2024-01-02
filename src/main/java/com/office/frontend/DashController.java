@@ -1,5 +1,7 @@
 package com.office.frontend;
 import backend.frontmatterapi.controllers.FrontMatterComparisonController;
+import backend.frontmatterapi.models.DownloadResults;
+import backend.frontmatterapi.models.FmChangeItem;
 import backend.frontmatterapi.models.FrontmatterComparisonResult;
 import backend.taggenerator.SupsdInfoChanger;
 import javafx.beans.property.BooleanProperty;
@@ -65,10 +67,6 @@ public class DashController implements Initializable {
     private TextField oldRevisionFileTextField;
     @FXML
     private TextField newRevisionFileTextField;
-    @FXML
-    private TextField oldRevisionFileTextField2;
-    @FXML
-    private TextField newRevisionFileTextField2;
     private File oldFile;
     private File newFile;
     private File txtFile;
@@ -77,6 +75,9 @@ public class DashController implements Initializable {
     private BooleanProperty isWorkingPathSelected = new SimpleBooleanProperty(false);
     private BooleanProperty isDatePicked = new SimpleBooleanProperty(false);
     private BooleanProperty isTxtFileSelected = new SimpleBooleanProperty(false);
+
+    public static DownloadResults downloadResults;
+
     @FXML
     private void selectOldRevisionFile(ActionEvent event) {
         handleFileSelection(oldRevisionFileTextField, (Button) event.getSource());
@@ -87,17 +88,6 @@ public class DashController implements Initializable {
     private void selectNewRevisionFile(ActionEvent event) {
         handleFileSelection(newRevisionFileTextField, (Button) event.getSource());
     }
-
-    @FXML
-    private void selectOldRevisionFile2(ActionEvent event) {
-        handleFileSelection(oldRevisionFileTextField2, (Button) event.getSource());
-    }
-
-    @FXML
-    private void selectNewRevisionFile2(ActionEvent event) {
-        handleFileSelection(newRevisionFileTextField2, (Button) event.getSource());
-    }
-
     @FXML
     private void selectWorkingPath(ActionEvent event) {
         handleFolderSelection(textWorkingPath, (Button) event.getSource());
@@ -299,6 +289,7 @@ public class DashController implements Initializable {
     }
     @FXML
     private void selectNextBtn() {
+        HashMap<String, ArrayList<FmChangeItem>> map = new HashMap<>();
         if(oldFile.getAbsolutePath().equals(newFile.getAbsolutePath())){
             oldRevisionFileTextField.clear();
             newRevisionFileTextField.clear();
@@ -343,12 +334,11 @@ public class DashController implements Initializable {
         System.out.println(oldFile.getAbsolutePath());
         System.out.println(newFile.getAbsolutePath());
         FrontmatterComparisonResult output = frontMatterComparisonController.processPDF(oldFile, newFile);
-        if(output.getLoiComparisonResult().isPresent())
-            System.out.println(output.getLoiComparisonResult().get());
-        if(output.getLotComparisonResult().isPresent())
-            System.out.println(output.getLotComparisonResult().get());
-        if(output.getTocComparisonResult().isPresent())
-            System.out.println(output.getTocComparisonResult().get());
+        downloadResults = new DownloadResults();
+        downloadResults.setLoiResult(output.getLoiComparisonResult().get());
+        downloadResults.setLotResult(output.getLotComparisonResult().get());
+        downloadResults.setTocResult(output.getTocComparisonResult().get());
+        downloadResults.setPath(Path.of(oldFile.getParent()));
         openNewWindowIfNeeded(output.getLoiComparisonResult().get(), "Changes in List Of Illustrations");
         openNewWindowIfNeeded(output.getLotComparisonResult().get(), "Changes in List Of Tables");
         openNewWindowIfNeeded(output.getTocComparisonResult().get(), "Changes in Table Of Contents");
@@ -393,6 +383,7 @@ public class DashController implements Initializable {
             showFileReadErrorAlert();
             txtFile = null;
             txtFileTextField.clear();
+
             updateTxtFileSelectedStatus();
         }
 

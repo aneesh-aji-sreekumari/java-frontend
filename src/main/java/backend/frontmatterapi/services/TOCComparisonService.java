@@ -1,10 +1,10 @@
 package backend.frontmatterapi.services;
 
-import backend.frontmatterapi.models.PageBlock;
-import backend.frontmatterapi.models.SubSubTopic;
-import backend.frontmatterapi.models.SubTopic;
+import backend.frontmatterapi.models.*;
+
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -335,5 +335,66 @@ public String[] extractTOCInfoFromSubOrSubsubTopicString(String s) {
 
         }
         return Optional.of(ans);
+    }
+    public void compareOldAndNewTocAutomation(ArrayList<PageBlock> oldToc, ArrayList<PageBlock> newToc, HashMap<String, ArrayList<FmChangeItem>> map) {
+        int N = oldToc.size();
+        for (int i = 0; i < N; i++) {
+            PageBlock oldPageBlock = oldToc.get(i);
+            PageBlock newPageBlock = newToc.get(i);
+            ArrayList<SubTopic> oldSubTopicList = oldPageBlock.subTopicList;
+            ArrayList<SubTopic> newSubTopicList = newPageBlock.subTopicList;
+            int oldLen = oldSubTopicList.size();
+            int newLen = newSubTopicList.size();
+            int j = 0, k = 0;
+            while (j < oldLen && k < newLen) {
+                SubTopic oldSubTopic = oldSubTopicList.get(j);
+                SubTopic newSubTopic = newSubTopicList.get(k);
+                if (oldSubTopic.subject.equals(newSubTopic.subject)) {
+                    if (!oldSubTopic.pageNumber.equals(newSubTopic.pageNumber)) {
+                        FmChangeItem fmChangeItem = new FmChangeItem();
+                        fmChangeItem.setChangeType(ChangeType.PAGE_NUM_CHANGE);
+                        fmChangeItem.setFrontMatterType(FrontMatterType.SUB_TOPIC);
+                        fmChangeItem.setSubTopic(newSubTopic);
+                        fmChangeItem.setPageblock(newPageBlock.pageBlockName);
+                        addIntoTheMap(map, fmChangeItem);
+                    }
+                }
+                ArrayList<SubSubTopic> oldSubSubTopicList = oldSubTopic.subSubTopicList;
+                ArrayList<SubSubTopic> newSubSubTopicList = newSubTopic.subSubTopicList;
+                int x = oldSubSubTopicList.size();
+                int y = newSubSubTopicList.size();
+                int l = 0, m = 0;
+                while (l < x && m < y) {
+                    SubSubTopic oldSubSubTopic = oldSubSubTopicList.get(l);
+                    SubSubTopic newSubSubTopic = newSubSubTopicList.get(m);
+                    if (oldSubSubTopic.subject.equals(newSubSubTopic.subject)) {
+                        if (!oldSubSubTopic.pageNumber.equals(newSubSubTopic.pageNumber)) {
+                            FmChangeItem fmChangeItem = new FmChangeItem();
+                            fmChangeItem.setChangeType(ChangeType.PAGE_NUM_CHANGE);
+                            fmChangeItem.setFrontMatterType(FrontMatterType.SUB_SUB_TOPIC);
+                            fmChangeItem.setSubSubTopic(newSubSubTopic);
+                            fmChangeItem.setPageblock(newPageBlock.pageBlockName);
+                            addIntoTheMap(map, fmChangeItem);
+
+
+                        }
+                    }
+                    l++;
+                    m++;
+                }
+
+            }
+        }
+        return;
+    }
+    public void addIntoTheMap(HashMap<String, ArrayList<FmChangeItem>> map, FmChangeItem fmChangeItem){
+        if(map.containsKey(fmChangeItem.getPageblock())){
+            map.get(fmChangeItem.getPageblock()).add(fmChangeItem);
+        }
+        else{
+            ArrayList<FmChangeItem> list = new ArrayList<>();
+            list.add(fmChangeItem);
+            map.put(fmChangeItem.getPageblock(), list);
+        }
     }
 }

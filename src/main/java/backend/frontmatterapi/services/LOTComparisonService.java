@@ -1,4 +1,5 @@
 package backend.frontmatterapi.services;
+import backend.frontmatterapi.models.FmChangeItem;
 import backend.frontmatterapi.models.LotItem;
 import backend.frontmatterapi.models.LotPageblockItem;
 import java.util.ArrayList;
@@ -328,5 +329,74 @@ public class LOTComparisonService {
             }
         }
         return Optional.of(ans);
+    }
+    public void compareLotAutomation(HashMap<String, LotPageblockItem> oldLot, HashMap<String, LotPageblockItem> newLot){
+        ArrayList<String> ans = new ArrayList<>();
+        for(String s: newLot.keySet()){
+            if(oldLot.containsKey(s)){
+                LotPageblockItem oldLotPageblockItem = oldLot.get(s);
+                LotPageblockItem newLotPageblockItem = newLot.get(s);
+                ArrayList<LotItem> oldListOfTables = oldLotPageblockItem.getListOfTables();
+                ArrayList<LotItem> newListOfTables = newLotPageblockItem.getListOfTables();
+                int n = oldListOfTables.size();
+                int m = newListOfTables.size();
+                int i=0, j=0;
+                while(i<n && j<m){
+                    LotItem loiItemOld = oldListOfTables.get(i);
+                    LotItem loiItemNew = newListOfTables.get(j);
+                    if(oldListOfTables.get(i).getTableTitle().equals(newListOfTables.get(j).getTableTitle())){
+                        if(!oldListOfTables.get(i).getPageNumber().equals(newListOfTables.get(j).getPageNumber())){
+                            ans.add("Add Revbar for: {"
+                                    + loiItemNew.getPageblock()
+                                    +"} <" + loiItemNew.getTableNumber() +"> |"
+                                    + loiItemNew.getTableTitle() + "| Page number got changed from " +
+                                    loiItemOld.getPageNumber()+
+                                    " to "
+                                    + loiItemNew.getPageNumber() + ".");
+                        }
+
+                    }
+                    else{
+                        ans.add("Add Revbar for: {"
+                                + loiItemNew.getPageblock()
+                                +"} Title changed from " +loiItemOld.getTableNumber() + " " + loiItemOld.getTableTitle() +
+                                " to <" + loiItemNew.getTableNumber() +"> |"
+                                + loiItemNew.getTableTitle() + "|.");
+                    }
+                    i++;
+                    j++;
+
+                }
+                while(j<m){
+                    LotItem lotItem = newListOfTables.get(j);
+                    ans.add("Add Revbar for: {"
+                            + lotItem.getPageblock()
+                            +"} Fig.No: <" + lotItem.getTableNumber() +"> |"
+                            + lotItem.getTableTitle() + "|.");
+                    j++;
+                }
+
+            }
+            else{
+                LotPageblockItem lotPageblockItem = newLot.get(s);
+                ArrayList<LotItem> listOfTables = lotPageblockItem.getListOfTables();
+                for(LotItem lotItem: listOfTables){
+                    ans.add("Add Revbar for: {"
+                            + lotItem.getPageblock()
+                            +"} Fig.No: <" + lotItem.getTableNumber() +"> |"
+                            + lotItem.getTableTitle() + "|.");
+                }
+            }
+        }
+    }
+    public void addIntoTheMap(HashMap<String, ArrayList<FmChangeItem>> map, FmChangeItem fmChangeItem){
+        if(map.containsKey(fmChangeItem.getPageblock())){
+            map.get(fmChangeItem.getPageblock()).add(fmChangeItem);
+        }
+        else{
+            ArrayList<FmChangeItem> list = new ArrayList<>();
+            list.add(fmChangeItem);
+            map.put(fmChangeItem.getPageblock(), list);
+        }
     }
 }
