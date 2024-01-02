@@ -1,6 +1,7 @@
 package com.office.frontend;
 import backend.frontmatterapi.controllers.FrontMatterComparisonController;
 import backend.frontmatterapi.models.FrontmatterComparisonResult;
+import backend.taggenerator.SupsdInfoChanger;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.event.ActionEvent;
@@ -18,6 +19,9 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -355,13 +359,71 @@ public class DashController implements Initializable {
     }
 
     public void generateTags(ActionEvent event) {
+        try {
+            // Read the contents of the file into a byte array
+            byte[] fileBytes = Files.readAllBytes(Paths.get(txtFile.getAbsolutePath()));
+            // Convert the byte array to a String using the default charset (UTF-8)
+            String fileContent = new String(fileBytes);
+            String output = SupsdInfoChanger.addSuperSedeInfoToIPLFigure(fileContent);
+            if(output.equals("Not a valid file")){
+                showSelectRequiredIplTextFileAlert();
+                txtFile = null;
+                txtFileTextField.clear();
+                updateTxtFileSelectedStatus();
+                return;
+            }
+            String fileName = txtFile.getName();
+            int n = fileName.length();
+            String targetPath = txtFile.getAbsolutePath() + fileName.substring(0, n-4) +"_output.txt";
+            try{
+                Path path = Paths.get(targetPath);
+                Files.write(path, output.getBytes());
+                showTagGeneratorSuccessAlert(path.toAbsolutePath().toString());
+                txtFile = null;
+                txtFileTextField.clear();
+                updateTxtFileSelectedStatus();
+            } catch (Exception e) {
+                showFileWriteErrorAlert();
+                txtFile = null;
+                txtFileTextField.clear();
+                updateTxtFileSelectedStatus();
+            }
+
+        } catch (IOException e) {
+            showFileReadErrorAlert();
+            txtFile = null;
+            txtFileTextField.clear();
+            updateTxtFileSelectedStatus();
+        }
+
+    }
+
+    private void showFileReadErrorAlert() {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Could Not Read The .txt File");
+        alert.setHeaderText(null);
+        alert.setContentText("There was some issue while trying to read the .txt File, Please try again");
+        alert.showAndWait();
+    }
+    private void showFileWriteErrorAlert() {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Could Not Create Output .txt File");
+        alert.setHeaderText(null);
+        alert.setContentText("There was some issue while trying to create the output .txt File, Please try again");
+        alert.showAndWait();
+    }
+    private void showTagGeneratorSuccessAlert(String absolutePath) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Success");
         alert.setHeaderText("Output File Saved Successfully");
-        alert.setContentText("The output file is placed in path");
+        alert.setContentText("The output file is placed in path: " + absolutePath);
         alert.showAndWait();
-        txtFile = null;
-        txtFileTextField.clear();
-        isTxtFileSelected.set(false);
+    }
+    private void showSelectRequiredIplTextFileAlert() {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("The Selected Text File Doesn't Meet IPL Standards");
+        alert.setHeaderText(null);
+        alert.setContentText("The file you have selected is not a txt file for IPL creation. Please select the correct file and try again");
+        alert.showAndWait();
     }
 }
