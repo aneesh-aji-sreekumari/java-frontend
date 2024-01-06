@@ -1,8 +1,7 @@
 package backend.frontmatterapi.services;
 
-import backend.frontmatterapi.models.FmChangeItem;
-import backend.frontmatterapi.models.LoiItem;
-import backend.frontmatterapi.models.LoiPageblockItem;
+import backend.frontmatterapi.models.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -331,61 +330,40 @@ public class LOIComparisonService {
         }
         return Optional.of(ans);
     }
-    public void compareLoiAutomation(HashMap<String, LoiPageblockItem> oldLoi, HashMap<String, LoiPageblockItem> newLoi){
+
+    public void compareLoiAutomation(HashMap<String, LoiPageblockItem> oldLoi, HashMap<String, LoiPageblockItem> newLoi, HashMap<String, ArrayList<FmChangeItem>> map) {
         ArrayList<String> ans = new ArrayList<>();
-        for(String s: newLoi.keySet()){
-            if(oldLoi.containsKey(s)){
+        for (String s : newLoi.keySet()) {
+            if (oldLoi.containsKey(s)) {
                 LoiPageblockItem oldLoiPageblockItem = oldLoi.get(s);
                 LoiPageblockItem newLoiPageblockItem = newLoi.get(s);
                 ArrayList<LoiItem> oldListOfIllus = oldLoiPageblockItem.getListOfIllustrations();
                 ArrayList<LoiItem> newListOfIllus = newLoiPageblockItem.getListOfIllustrations();
                 int n = oldListOfIllus.size();
                 int m = newListOfIllus.size();
-                int i=0, j=0;
-                while(i<n && j<m){
+                int i = 0, j = 0;
+                while (i < n && j < m) {
                     LoiItem loiItemOld = oldListOfIllus.get(i);
                     LoiItem loiItemNew = newListOfIllus.get(j);
-                    if(oldListOfIllus.get(i).getFigureTitle().equals(newListOfIllus.get(j).getFigureTitle())){
-                        if(!oldListOfIllus.get(i).getPageNumber().equals(newListOfIllus.get(j).getPageNumber())){
-                            ans.add("Add Revbar for: {"
-                                    + loiItemNew.getPageblock()
-                                    +"} <" + loiItemNew.getFigureNumber() +"> |"
-                                    + loiItemNew.getFigureTitle() + "| Page number got changed from " +
-                                    loiItemOld.getPageNumber()+
-                                    " to "
-                                    + loiItemNew.getPageNumber() + ".");
+                    if (loiItemOld.getFigureTitle().toLowerCase().contains("deleted")) {
+                        i++;
+                    }
+                    else if (loiItemOld.getFigureNumber().equals(loiItemNew.getFigureNumber())) {
+                        if (loiItemOld.getPageNumber().equals(loiItemNew.getPageNumber())) {
+                            addIntoTheMap(map, fmChangeItemBuilder(loiItemNew));
+                            i++;
+                            j++;
                         }
-
+                    } else if (!(loiItemOld.getFigureNumber().equals(loiItemNew.getFigureNumber()))) {
+                        addIntoTheMap(map, fmChangeItemBuilder(loiItemNew));
+                        i++;
+                        j++;
                     }
-                    else{
-                        ans.add("Add Revbar for: {"
-                                + loiItemNew.getPageblock()
-                                +"} Title changed from " +loiItemOld.getFigureNumber() + " " + loiItemOld.getFigureTitle() +
-                                " to <" + loiItemNew.getFigureNumber() +"> |"
-                                + loiItemNew.getFigureTitle() + "|.");
-                    }
-                    i++;
-                    j++;
-
                 }
-                while(j<m){
-                    LoiItem loiItem = newListOfIllus.get(j);
-                    ans.add("Add Revbar for: {"
-                            + loiItem.getPageblock()
-                            +"} Fig.No: <" + loiItem.getFigureNumber() +"> |"
-                            + loiItem.getFigureTitle() + "|.");
+                while (j < m) {
+                    LoiItem loiItemNew = newListOfIllus.get(j);
+                    addIntoTheMap(map, fmChangeItemBuilder(loiItemNew));
                     j++;
-                }
-
-            }
-            else{
-                LoiPageblockItem loiPageblockItem = newLoi.get(s);
-                ArrayList<LoiItem> listOfIllustrations = loiPageblockItem.getListOfIllustrations();
-                for(LoiItem loiItem: listOfIllustrations){
-                    ans.add("Add Revbar for: {"
-                            + loiItem.getPageblock()
-                            +"} Fig.No: <" + loiItem.getFigureNumber() +"> |"
-                            + loiItem.getFigureTitle() + "|.");
                 }
             }
         }
@@ -399,6 +377,14 @@ public class LOIComparisonService {
             list.add(fmChangeItem);
             map.put(fmChangeItem.getPageblock(), list);
         }
+    }
+    private FmChangeItem fmChangeItemBuilder(LoiItem loiItemNew){
+        FmChangeItem fmChangeItem = new FmChangeItem();
+        fmChangeItem.setChangeType(ChangeType.PAGE_NUM_CHANGE);
+        fmChangeItem.setLoiItem(loiItemNew);
+        fmChangeItem.setPageblock(loiItemNew.getPageblock());
+        fmChangeItem.setFrontMatterType(FrontMatterType.FIGURE);
+        return fmChangeItem;
     }
 }
 

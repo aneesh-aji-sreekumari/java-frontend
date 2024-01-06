@@ -1,6 +1,6 @@
 package backend.frontmatterapi.models;
 import java.util.ArrayList;
-public class SubTopic {
+public class SubTopic  implements FmTypeInterface{
     public ArrayList<SubSubTopic> subSubTopicList;
     public String number;
     public String subject;

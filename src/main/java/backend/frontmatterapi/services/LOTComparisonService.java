@@ -1,7 +1,6 @@
 package backend.frontmatterapi.services;
-import backend.frontmatterapi.models.FmChangeItem;
-import backend.frontmatterapi.models.LotItem;
-import backend.frontmatterapi.models.LotPageblockItem;
+import backend.frontmatterapi.models.*;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -330,7 +329,7 @@ public class LOTComparisonService {
         }
         return Optional.of(ans);
     }
-    public void compareLotAutomation(HashMap<String, LotPageblockItem> oldLot, HashMap<String, LotPageblockItem> newLot){
+    public void compareLotAutomation(HashMap<String, LotPageblockItem> oldLot, HashMap<String, LotPageblockItem> newLot, HashMap<String, ArrayList<FmChangeItem>> map){
         ArrayList<String> ans = new ArrayList<>();
         for(String s: newLot.keySet()){
             if(oldLot.containsKey(s)){
@@ -342,37 +341,27 @@ public class LOTComparisonService {
                 int m = newListOfTables.size();
                 int i=0, j=0;
                 while(i<n && j<m){
-                    LotItem loiItemOld = oldListOfTables.get(i);
-                    LotItem loiItemNew = newListOfTables.get(j);
-                    if(oldListOfTables.get(i).getTableTitle().equals(newListOfTables.get(j).getTableTitle())){
-                        if(!oldListOfTables.get(i).getPageNumber().equals(newListOfTables.get(j).getPageNumber())){
-                            ans.add("Add Revbar for: {"
-                                    + loiItemNew.getPageblock()
-                                    +"} <" + loiItemNew.getTableNumber() +"> |"
-                                    + loiItemNew.getTableTitle() + "| Page number got changed from " +
-                                    loiItemOld.getPageNumber()+
-                                    " to "
-                                    + loiItemNew.getPageNumber() + ".");
+                    LotItem lotItemOld = oldListOfTables.get(i);
+                    LotItem lotItemNew = newListOfTables.get(j);
+                    if(lotItemNew.getTableTitle().toLowerCase().contains("deleted")){
+                        i++;
+                    }
+                    else if (lotItemOld.getTableNumber().equals(lotItemNew.getTableNumber())) {
+                        if (lotItemOld.getPageNumber().equals(lotItemNew.getPageNumber())) {
+                            addIntoTheMap(map, fmChangeItemBuilder(lotItemNew));
+                            i++;
+                            j++;
                         }
-
+                    } else if (!(lotItemOld.getTableNumber().equals(lotItemNew.getTableNumber()))) {
+                        addIntoTheMap(map, fmChangeItemBuilder(lotItemNew));
+                        i++;
+                        j++;
                     }
-                    else{
-                        ans.add("Add Revbar for: {"
-                                + loiItemNew.getPageblock()
-                                +"} Title changed from " +loiItemOld.getTableNumber() + " " + loiItemOld.getTableTitle() +
-                                " to <" + loiItemNew.getTableNumber() +"> |"
-                                + loiItemNew.getTableTitle() + "|.");
-                    }
-                    i++;
-                    j++;
 
                 }
                 while(j<m){
-                    LotItem lotItem = newListOfTables.get(j);
-                    ans.add("Add Revbar for: {"
-                            + lotItem.getPageblock()
-                            +"} Fig.No: <" + lotItem.getTableNumber() +"> |"
-                            + lotItem.getTableTitle() + "|.");
+                    LotItem lotItemNew = newListOfTables.get(j);
+                    addIntoTheMap(map, fmChangeItemBuilder(lotItemNew));
                     j++;
                 }
 
@@ -398,5 +387,13 @@ public class LOTComparisonService {
             list.add(fmChangeItem);
             map.put(fmChangeItem.getPageblock(), list);
         }
+    }
+    private FmChangeItem fmChangeItemBuilder(LotItem lotItemNew){
+        FmChangeItem fmChangeItem = new FmChangeItem();
+        fmChangeItem.setChangeType(ChangeType.PAGE_NUM_CHANGE);
+        fmChangeItem.setLotItem(lotItemNew);
+        fmChangeItem.setPageblock(lotItemNew.getPageblock());
+        fmChangeItem.setFrontMatterType(FrontMatterType.TABLE);
+        return fmChangeItem;
     }
 }

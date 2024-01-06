@@ -2,7 +2,7 @@ package backend.frontmatterapi.models;
 
 import java.util.ArrayList;
 
-public class PageBlock {
+public class PageBlock  implements FmTypeInterface{
     public ArrayList<SubTopic> subTopicList;
     public String pageNumber;
     public String pageBlockName;

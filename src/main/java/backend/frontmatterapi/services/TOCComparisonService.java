@@ -180,6 +180,7 @@ public String[] extractTOCInfoFromSubOrSubsubTopicString(String s) {
                 subSubTopic.subject = info[1];
                 subSubTopic.pageNumber = info[2];
                 currentSubTopic.subSubTopicList.add(subSubTopic);
+                subSubTopic.parentSubTopic = currentSubTopic;
             } else {
                 String[] info = extractTOCInfoFromSubOrSubsubTopicString(line);
                 SubTopic subTopic = new SubTopic();
@@ -351,12 +352,7 @@ public String[] extractTOCInfoFromSubOrSubsubTopicString(String s) {
                 SubTopic newSubTopic = newSubTopicList.get(k);
                 if (oldSubTopic.subject.equals(newSubTopic.subject)) {
                     if (!oldSubTopic.pageNumber.equals(newSubTopic.pageNumber)) {
-                        FmChangeItem fmChangeItem = new FmChangeItem();
-                        fmChangeItem.setChangeType(ChangeType.PAGE_NUM_CHANGE);
-                        fmChangeItem.setFrontMatterType(FrontMatterType.SUB_TOPIC);
-                        fmChangeItem.setSubTopic(newSubTopic);
-                        fmChangeItem.setPageblock(newPageBlock.pageBlockName);
-                        addIntoTheMap(map, fmChangeItem);
+                        addIntoTheMap(map, fmChangeItemBuilder(newSubTopic, newPageBlock.pageBlockName));
                     }
                 }
                 ArrayList<SubSubTopic> oldSubSubTopicList = oldSubTopic.subSubTopicList;
@@ -369,14 +365,7 @@ public String[] extractTOCInfoFromSubOrSubsubTopicString(String s) {
                     SubSubTopic newSubSubTopic = newSubSubTopicList.get(m);
                     if (oldSubSubTopic.subject.equals(newSubSubTopic.subject)) {
                         if (!oldSubSubTopic.pageNumber.equals(newSubSubTopic.pageNumber)) {
-                            FmChangeItem fmChangeItem = new FmChangeItem();
-                            fmChangeItem.setChangeType(ChangeType.PAGE_NUM_CHANGE);
-                            fmChangeItem.setFrontMatterType(FrontMatterType.SUB_SUB_TOPIC);
-                            fmChangeItem.setSubSubTopic(newSubSubTopic);
-                            fmChangeItem.setPageblock(newPageBlock.pageBlockName);
-                            addIntoTheMap(map, fmChangeItem);
-
-
+                            addIntoTheMap(map, fmChangeItemBuilder(newSubSubTopic, newPageBlock.pageBlockName));
                         }
                     }
                     l++;
@@ -387,14 +376,30 @@ public String[] extractTOCInfoFromSubOrSubsubTopicString(String s) {
         }
         return;
     }
-    public void addIntoTheMap(HashMap<String, ArrayList<FmChangeItem>> map, FmChangeItem fmChangeItem){
-        if(map.containsKey(fmChangeItem.getPageblock())){
+    public void addIntoTheMap(HashMap<String, ArrayList<FmChangeItem>> map, FmChangeItem fmChangeItem) {
+        if (map.containsKey(fmChangeItem.getPageblock())) {
             map.get(fmChangeItem.getPageblock()).add(fmChangeItem);
-        }
-        else{
+        } else {
             ArrayList<FmChangeItem> list = new ArrayList<>();
             list.add(fmChangeItem);
             map.put(fmChangeItem.getPageblock(), list);
         }
+    }
+    private FmChangeItem fmChangeItemBuilder(FmTypeInterface fmItem, String pageblock){
+        FmChangeItem fmChangeItem = new FmChangeItem();
+        fmChangeItem.setChangeType(ChangeType.PAGE_NUM_CHANGE);
+        if (fmItem instanceof PageBlock)
+            fmChangeItem.setFrontMatterType(FrontMatterType.PB_TITLE);
+        else if(fmItem instanceof SubTopic){
+            fmChangeItem.setSubTopic((SubTopic) fmItem);
+            fmChangeItem.setFrontMatterType(FrontMatterType.SUB_TOPIC);
+        }
+        else if(fmItem instanceof SubSubTopic){
+            fmChangeItem.setSubSubTopic((SubSubTopic) fmItem);
+            fmChangeItem.setFrontMatterType(FrontMatterType.SUB_SUB_TOPIC);
+            fmChangeItem.setSubTopic((SubTopic) ((SubSubTopic) fmItem).parentSubTopic);
+        }
+        fmChangeItem.setPageblock(pageblock);
+        return fmChangeItem;
     }
 }

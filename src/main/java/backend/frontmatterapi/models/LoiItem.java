@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class LoiItem {
+public class LoiItem implements FmTypeInterface{
     private String figureNumber;
     private String figureTitle;
     private String pageblock;

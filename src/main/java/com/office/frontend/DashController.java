@@ -77,6 +77,7 @@ public class DashController implements Initializable {
     private BooleanProperty isTxtFileSelected = new SimpleBooleanProperty(false);
 
     public static DownloadResults downloadResults;
+    public String workingFolderPath;
 
     @FXML
     private void selectOldRevisionFile(ActionEvent event) {
@@ -202,6 +203,8 @@ public class DashController implements Initializable {
         File selectedFolder = directoryChooser.showDialog(null);
         if (selectedFolder != null) {
             textWorkingPath.setText(selectedFolder.getAbsolutePath());
+            workingFolderPath = selectedFolder.getAbsolutePath();
+            System.out.println("The selected WF Path is: " + workingFolderPath);
             updateWorkingFolderPathSelectStatus();
         }
 
