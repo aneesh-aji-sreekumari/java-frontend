@@ -19,12 +19,8 @@ public  Optional<Tuple> readPDF(File file) throws IOException {
 
     try{
         PDDocument document = Loader.loadPDF(file);
-//        InputStream inputStream = multipartFile.getInputStream();
-//
-//         PDDocument document = Loader.loadPDF(inputStream.readAllBytes());
-
         PDFTextStripper textStripper = new PDFTextStripper();
-
+        boolean isLotFound = false;
         for (int i = 1; i <= document.getNumberOfPages(); i++) {
             textStripper.setStartPage(i);
             textStripper.setEndPage(i);
@@ -39,8 +35,10 @@ public  Optional<Tuple> readPDF(File file) throws IOException {
                     isToc = true;
                 else if(line.contains("LIST OF ILLUSTRATIONS"))
                     isLoi = true;
-                else if(line.contains("LIST OF TABLES"))
+                else if(line.contains("LIST OF TABLES")){
                     isLot = true;
+                }
+
                 if(isToc){
                     tuple.getTocList().add(line.trim());
                 }
@@ -55,7 +53,6 @@ public  Optional<Tuple> readPDF(File file) throws IOException {
     } catch (IOException e) {
         throw new RuntimeException(e);
     }
-
     return Optional.of(tuple);
 }
 }

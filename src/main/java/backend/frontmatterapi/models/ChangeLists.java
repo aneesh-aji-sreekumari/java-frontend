@@ -1,11 +1,7 @@
 package backend.frontmatterapi.models;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import java.util.ArrayList;
-@Getter
-@Setter
+
 public class ChangeLists {
    private ArrayList<FmChangeItem> tocList;
    private ArrayList<FmChangeItem> tablesList;
@@ -23,5 +19,29 @@ public class ChangeLists {
             else
                 tocList.add(fmChangeItems.get(i));
         }
+    }
+
+    public ArrayList<FmChangeItem> getTocList() {
+        return tocList;
+    }
+
+    public void setTocList(ArrayList<FmChangeItem> tocList) {
+        this.tocList = tocList;
+    }
+
+    public ArrayList<FmChangeItem> getTablesList() {
+        return tablesList;
+    }
+
+    public void setTablesList(ArrayList<FmChangeItem> tablesList) {
+        this.tablesList = tablesList;
+    }
+
+    public ArrayList<FmChangeItem> getFiguresList() {
+        return figuresList;
+    }
+
+    public void setFiguresList(ArrayList<FmChangeItem> figuresList) {
+        this.figuresList = figuresList;
     }
 }

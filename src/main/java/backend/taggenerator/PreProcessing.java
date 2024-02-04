@@ -38,10 +38,10 @@ public class PreProcessing {
     }
 
     //This method returns start and end index of a particular tag, if the tag is not found returns [-1, -1]
-    public static int[] getStartAndEndIndexOfTag(String s, String tag){
+    public static int[] getStartAndEndIndexOfTag(String s, String tag, int currIndex){
         int[] ans = new int[]{-1, -1};
         int N = s.length();
-        for(int i=0; i<N; i++){
+        for(int i=currIndex; i<N; i++){
             if(s.charAt(i) == '<' && ans[0] == -1 && checkCurrentTag(s, N, i+1, tag) == 1){
                 ans[0] = i;
             }
@@ -69,5 +69,26 @@ public class PreProcessing {
                 return i;
         }
         return -1;
+    }
+    public static String startingAndEndingOfAbsoluteTitle(String s){
+        int N = s.length();
+        int st = 0;
+        int end = N-1;
+        while (st<N){
+            char ch = s.charAt(st);
+            if(ch == '>'){
+                st+=1;
+                break;
+            }
+                st++;
+        }
+        while (end > st){
+            char ch = s.charAt(end);
+            if(ch == '<'){
+                break;
+            }
+            end--;
+        }
+        return s.substring(st, end);
     }
 }

@@ -8,6 +8,9 @@ module com.office.frontend {
     requires lombok;
     requires org.apache.pdfbox;
     requires com.jfoenix;
+    requires org.apache.poi.ooxml;
+    requires org.apache.poi.ooxml.schemas;
+    requires org.apache.poi.poi;
     opens com.office.frontend to javafx.fxml;
     exports com.office.frontend;
 }

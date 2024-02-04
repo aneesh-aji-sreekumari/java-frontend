@@ -20,7 +20,6 @@ public class TupleThread implements Callable<Optional<Tuple>> {
     }
     @Override
     public Optional<Tuple> call() throws Exception {
-        System.out.println("Current Thread:" + Thread.currentThread().getName());
         return frontMatterComparisonService.readPDF(file);
     }
 }

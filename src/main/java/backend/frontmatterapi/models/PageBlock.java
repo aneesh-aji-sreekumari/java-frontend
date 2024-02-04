@@ -10,13 +10,4 @@ public class PageBlock  implements FmTypeInterface{
         subTopicList = new ArrayList<>();
     }
 
-    @Override
-    public String toString() {
-        System.out.println(pageBlockName + " | " + pageNumber);
-        for(SubTopic subTopic: this.subTopicList)
-            System.out.println(subTopic);
-        return "..............................................................................................................";
-    }
-
-
 }

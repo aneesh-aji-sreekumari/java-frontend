@@ -22,7 +22,7 @@ public class SupsdInfoChanger {
     }
     public static String addSupersedeInformationTagToItemdataTag(String itemdataTag){
         int N = itemdataTag.length();
-        int[] startAndEnd = PreProcessing.getStartAndEndIndexOfTag(itemdataTag, "msc");
+        int[] startAndEnd = PreProcessing.getStartAndEndIndexOfTag(itemdataTag, "msc", 0);
         if(startAndEnd[0] == -1)
             return itemdataTag;
         String mscTag = itemdataTag.substring(startAndEnd[0], startAndEnd[1]+1);

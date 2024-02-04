@@ -1,14 +1,7 @@
 package backend.frontmatterapi.models;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
-
 import java.util.ArrayList;
 
-@Getter
-@Setter
-@ToString
 public class LoiPageblockItem {
    private ArrayList<LoiItem> listOfIllustrations;
    private String pageblockName;
@@ -16,4 +9,20 @@ public class LoiPageblockItem {
        this.pageblockName = pageblockName;
        listOfIllustrations = new ArrayList<>();
    }
+
+    public ArrayList<LoiItem> getListOfIllustrations() {
+        return listOfIllustrations;
+    }
+
+    public void setListOfIllustrations(ArrayList<LoiItem> listOfIllustrations) {
+        this.listOfIllustrations = listOfIllustrations;
+    }
+
+    public String getPageblockName() {
+        return pageblockName;
+    }
+
+    public void setPageblockName(String pageblockName) {
+        this.pageblockName = pageblockName;
+    }
 }

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class TOCComparisonService {
+    UtilityFunctions utilityFunctions = new UtilityFunctions();
     public Optional<ArrayList<String>> getRevisionChangesInToc(Optional<List<String>> OldLines, Optional<List<String>> newLines) throws IOException {
         if(OldLines.isEmpty() || newLines.isEmpty())
             throw new IOException();
@@ -27,6 +28,25 @@ public class TOCComparisonService {
             throw new RuntimeException("There was some issue in reading the PDF");
         //Generating the output
         return compareOldAndNewToc(oldPageBlockArrayList.get(), newPageBlockArrayList.get());
+    }
+    public void getRevisionChangesInTocAutomation(Optional<List<String>> OldLines, Optional<List<String>> newLines, HashMap<String, ArrayList<FmChangeItem>> map) throws IOException {
+        if(OldLines.isEmpty() || newLines.isEmpty())
+            throw new IOException();
+        //Filtering the unwanted lines from the String array
+        Optional<ArrayList<String>> formattedOldToc = filterUnwantedLinesFromLatestPdf(OldLines.get());
+        Optional<ArrayList<String>> formattedNewToc = filterUnwantedLinesFromLatestPdf(newLines.get());
+        //Checking whether the filterUnwantedLinesFromLatestPdf method return a null
+        if (formattedOldToc.isEmpty() || formattedNewToc.isEmpty())
+            throw new RuntimeException("There was some issue in reading the PDF");
+
+        // segregating content page-block, subtopic and sub-subtopic wise
+        Optional<ArrayList<PageBlock>> oldPageBlockArrayList = getPageblockWiseContent(formattedOldToc.get());
+        Optional<ArrayList<PageBlock>> newPageBlockArrayList = getPageblockWiseContent(formattedNewToc.get());
+        //Checking whether the filterUnwantedLinesFromLatestPdf method return a null
+        if (oldPageBlockArrayList.isEmpty() || newPageBlockArrayList.isEmpty())
+            throw new RuntimeException("There was some issue in reading the PDF");
+        //Getting the Old Revision and new Revision Changes
+        compareOldAndNewTocAutomation(oldPageBlockArrayList.get(), newPageBlockArrayList.get(), map);
     }
 
     public String[] extractTOCInfoFromPageblockString(String s) {
@@ -82,7 +102,10 @@ public String[] extractTOCInfoFromSubOrSubsubTopicString(String s) {
     while(i<N){
         if(s.charAt(i) == '.'){
             ans[0] = sb.toString();
-            i= i+2;
+            if(s.charAt(i+1) == ' ')
+                i= i+2;
+            else
+                i=i+1;
             sb = new StringBuilder();
             break;
         }
@@ -135,7 +158,9 @@ public String[] extractTOCInfoFromSubOrSubsubTopicString(String s) {
             return false;
         return true;
     }
-    public Optional<ArrayList<String>> filterUnwantedLinesFromLatestPdf(List<String> lines) {
+    public Optional<ArrayList<String>> filterUnwantedLinesFromLatestPdf1(List<String> lines) {
+        boolean isSubjectFound = false;
+        boolean isDateFound = false;
         int N = lines.size();
         ArrayList<String> finalList = new ArrayList<>();
         for (int i = 0; i < N; i++) {
@@ -177,7 +202,7 @@ public String[] extractTOCInfoFromSubOrSubsubTopicString(String s) {
                 String[] info = extractTOCInfoFromSubOrSubsubTopicString(line);
                 SubSubTopic subSubTopic = new SubSubTopic();
                 subSubTopic.number = info[0];
-                subSubTopic.subject = info[1];
+                subSubTopic.subject = utilityFunctions.removeExtraSpaceFromTitle(info[1]).trim();
                 subSubTopic.pageNumber = info[2];
                 currentSubTopic.subSubTopicList.add(subSubTopic);
                 subSubTopic.parentSubTopic = currentSubTopic;
@@ -185,7 +210,7 @@ public String[] extractTOCInfoFromSubOrSubsubTopicString(String s) {
                 String[] info = extractTOCInfoFromSubOrSubsubTopicString(line);
                 SubTopic subTopic = new SubTopic();
                 subTopic.number = info[0];
-                subTopic.subject = info[1];
+                subTopic.subject = utilityFunctions.removeExtraSpaceFromTitle(info[1]).trim();
                 subTopic.pageNumber = info[2];
                 currentPageBlock.subTopicList.add(subTopic);
                 currentSubTopic = subTopic;
@@ -337,6 +362,7 @@ public String[] extractTOCInfoFromSubOrSubsubTopicString(String s) {
         }
         return Optional.of(ans);
     }
+
     public void compareOldAndNewTocAutomation(ArrayList<PageBlock> oldToc, ArrayList<PageBlock> newToc, HashMap<String, ArrayList<FmChangeItem>> map) {
         int N = oldToc.size();
         for (int i = 0; i < N; i++) {
@@ -350,31 +376,53 @@ public String[] extractTOCInfoFromSubOrSubsubTopicString(String s) {
             while (j < oldLen && k < newLen) {
                 SubTopic oldSubTopic = oldSubTopicList.get(j);
                 SubTopic newSubTopic = newSubTopicList.get(k);
-                if (oldSubTopic.subject.equals(newSubTopic.subject)) {
-                    if (!oldSubTopic.pageNumber.equals(newSubTopic.pageNumber)) {
-                        addIntoTheMap(map, fmChangeItemBuilder(newSubTopic, newPageBlock.pageBlockName));
-                    }
+                if (oldSubTopic.subject.toLowerCase().contains("delete")) {
+                    j++;
+                    if(newSubTopic.subject.toLowerCase().contains("delete"))
+                        k++;
                 }
-                ArrayList<SubSubTopic> oldSubSubTopicList = oldSubTopic.subSubTopicList;
-                ArrayList<SubSubTopic> newSubSubTopicList = newSubTopic.subSubTopicList;
-                int x = oldSubSubTopicList.size();
-                int y = newSubSubTopicList.size();
-                int l = 0, m = 0;
-                while (l < x && m < y) {
-                    SubSubTopic oldSubSubTopic = oldSubSubTopicList.get(l);
-                    SubSubTopic newSubSubTopic = newSubSubTopicList.get(m);
-                    if (oldSubSubTopic.subject.equals(newSubSubTopic.subject)) {
-                        if (!oldSubSubTopic.pageNumber.equals(newSubSubTopic.pageNumber)) {
-                            addIntoTheMap(map, fmChangeItemBuilder(newSubSubTopic, newPageBlock.pageBlockName));
+                else if(newSubTopic.subject.toLowerCase().contains("delete")){
+                    j++;
+                    k++;
+                }
+                else {
+                    if (oldSubTopic.subject.equals(newSubTopic.subject)) {
+                        if (!oldSubTopic.pageNumber.equals(newSubTopic.pageNumber)) {
+                            addIntoTheMap(map, fmChangeItemBuilder(newSubTopic, newPageBlock.pageBlockName));
                         }
                     }
-                    l++;
-                    m++;
+                    ArrayList<SubSubTopic> oldSubSubTopicList = oldSubTopic.subSubTopicList;
+                    ArrayList<SubSubTopic> newSubSubTopicList = newSubTopic.subSubTopicList;
+                    int x = oldSubSubTopicList.size();
+                    int y = newSubSubTopicList.size();
+                    int l = 0, m = 0;
+                    while (l < x && m < y) {
+                        SubSubTopic oldSubSubTopic = oldSubSubTopicList.get(l);
+                        SubSubTopic newSubSubTopic = newSubSubTopicList.get(m);
+                        if (oldSubSubTopic.subject.toLowerCase().contains("delete")) {
+                            l++;
+                            if(newSubSubTopic.subject.toLowerCase().contains("delete"))
+                                m++;
+                        }
+                        else if (newSubSubTopic.subject.toLowerCase().contains("delete")){
+                            l++;
+                            m++;
+                        }
+                        else {
+                            if (oldSubSubTopic.subject.equals(newSubSubTopic.subject)) {
+                                if (!oldSubSubTopic.pageNumber.equals(newSubSubTopic.pageNumber)) {
+                                    addIntoTheMap(map, fmChangeItemBuilder(newSubSubTopic, newPageBlock.pageBlockName));
+                                }
+                            }
+                            l++;
+                            m++;
+                        }
+                    }
+                    j++;
+                    k++;
                 }
-
             }
         }
-        return;
     }
     public void addIntoTheMap(HashMap<String, ArrayList<FmChangeItem>> map, FmChangeItem fmChangeItem) {
         if (map.containsKey(fmChangeItem.getPageblock())) {
@@ -401,5 +449,60 @@ public String[] extractTOCInfoFromSubOrSubsubTopicString(String s) {
         }
         fmChangeItem.setPageblock(pageblock);
         return fmChangeItem;
+    }
+    public Optional<ArrayList<String>> filterUnwantedLinesFromLatestPdf(List<String> lines) {
+        boolean isSubjectFound = false;
+        int N = lines.size();
+        ArrayList<String> finalList = new ArrayList<>();
+        for (int i = 0; i < N; i++) {
+            String s = lines.get(i);
+            if(s.startsWith("SUBJECT")){
+                isSubjectFound = true;
+                continue;
+            }
+            if(s.contains("TOC-")){
+                isSubjectFound = false;
+                continue;
+            }
+            if(isSubjectFound == true){
+                if (s.startsWith("VOLUME"))
+                    continue;
+                finalList.add(s);
+            }
+        }
+        ArrayList<String> processed = new ArrayList<>();
+        N = finalList.size();
+        for (int i = 0; i < N; i++) {
+            String s = finalList.get(i);
+            if (isPageblockTitle(s) == 1 || s.substring(0, 3).contains("."))
+                processed.add(s);
+            else {
+                int j = processed.size() - 1;
+                processed.set(j, processed.get(j) + " " + s);
+            }
+
+        }
+        return Optional.of(processed);
+    }
+    public Optional<HashMap<String, ArrayList<PageBlock>>> getRevisionTOCLists(Optional<List<String>> OldLines, Optional<List<String>> newLines) throws IOException {
+        if(OldLines.isEmpty() || newLines.isEmpty())
+            throw new IOException();
+        //Filtering the unwanted lines from the String array
+        Optional<ArrayList<String>> formattedOldToc = filterUnwantedLinesFromLatestPdf(OldLines.get());
+        Optional<ArrayList<String>> formattedNewToc = filterUnwantedLinesFromLatestPdf(newLines.get());
+        //Checking whether the filterUnwantedLinesFromLatestPdf method return a null
+        if (formattedOldToc.isEmpty() || formattedNewToc.isEmpty())
+            throw new RuntimeException("There was some issue in reading the PDF");
+        // segregating content page-block, subtopic and sub-subtopic wise
+        Optional<ArrayList<PageBlock>> oldPageBlockArrayList = getPageblockWiseContent(formattedOldToc.get());
+        Optional<ArrayList<PageBlock>> newPageBlockArrayList = getPageblockWiseContent(formattedNewToc.get());
+        //Checking whether the filterUnwantedLinesFromLatestPdf method return a null
+        if (oldPageBlockArrayList.isEmpty() || newPageBlockArrayList.isEmpty())
+            throw new RuntimeException("There was some issue in reading the PDF");
+        //Generating the output
+        HashMap<String, ArrayList<PageBlock>> map = new HashMap<>();
+        map.put("old", oldPageBlockArrayList.get());
+        map.put("new", newPageBlockArrayList.get());
+        return Optional.of(map);
     }
 }

@@ -1,11 +1,7 @@
 package backend.frontmatterapi.models;
 
-import lombok.Getter;
-import lombok.Setter;
 
 import java.util.ArrayList;
-@Getter
-@Setter
 public class LotPageblockItem {
    private ArrayList<LotItem> listOfTables;
    private String pageblockName;
@@ -14,4 +10,19 @@ public class LotPageblockItem {
        listOfTables = new ArrayList<>();
    }
 
+    public ArrayList<LotItem> getListOfTables() {
+        return listOfTables;
+    }
+
+    public void setListOfTables(ArrayList<LotItem> listOfTables) {
+        this.listOfTables = listOfTables;
+    }
+
+    public String getPageblockName() {
+        return pageblockName;
+    }
+
+    public void setPageblockName(String pageblockName) {
+        this.pageblockName = pageblockName;
+    }
 }

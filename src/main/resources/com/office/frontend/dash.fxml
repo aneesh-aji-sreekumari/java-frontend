@@ -11,6 +11,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.shape.Line?>
 
+<?import java.net.URL?>
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="530.0" prefWidth="969.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.office.frontend.DashController">
    <children>
       <Pane style="-fx-background-color: #FFF; -fx-background-radius: 10;">
@@ -19,7 +20,7 @@
                <children>
                   <ImageView fitHeight="144.0" fitWidth="207.0" pickOnBounds="true" preserveRatio="true">
                      <image>
-                        <Image url="@imgs/logo.png" />
+                        <Image url="@imgs/logo1.png" />
                      </image>
                   </ImageView>
                   <Button fx:id="dashboardButton" alignment="BASELINE_LEFT" graphicTextGap="10.0" mnemonicParsing="false" onAction="#enableAndShowPane1" prefHeight="37.0" prefWidth="210.0" stylesheets="@fullpackstyling.css" text="FM Automation Tool">
@@ -86,19 +87,19 @@
                   </Pane>
                </children>
             </VBox>
-            <Pane layoutX="207.0" prefHeight="514.0" prefWidth="764.0" style="-fx-background-color: #fff;">
+            <Pane layoutX="207.0" prefHeight="514.0" prefWidth="764.0" style="-fx-background-color: #E5E5E5;">
                <children>
                   <Pane fx:id="pane1" disable="true" layoutX="31.0" layoutY="35.0" prefHeight="449.0" prefWidth="688.0" visible="false">
                      <children>
                         <!-- Content for Dashboard button -->
-                        <TextField fx:id="oldRevisionFileTextField" disable="true" editable="false" layoutX="48.0" layoutY="42.0" prefHeight="25.0" prefWidth="370.0" promptText="Select old revision file" />
-                        <Button fx:id="oldRevisionBtn" layoutX="457.0" layoutY="42.0" onAction="#selectOldRevisionFile" prefHeight="25.0" prefWidth="139.0" text="Select" />
-                        <TextField fx:id="newRevisionFileTextField" disable="true" editable="false" layoutX="48.0" layoutY="91.0" prefHeight="25.0" prefWidth="370.0" promptText="Select new revision file" />
-                        <Button fx:id="newRevisionButton" layoutX="457.0" layoutY="91.0" onAction="#selectNewRevisionFile" prefHeight="25.0" prefWidth="139.0" text="Select" />
-                        <TextField fx:id="textWorkingPath" disable="true" editable="false" layoutX="48.0" layoutY="139.0" prefHeight="25.0" prefWidth="370.0" promptText="Select Working Folder" />
-                        <Button fx:id="btnWorkingPath" disable="true" layoutX="457.0" layoutY="139.0" mnemonicParsing="false" onAction="#selectWorkingPath" prefHeight="25.0" prefWidth="139.0" text="Button" />
-                        <DatePicker fx:id="revdatePicker" disable="true" editable="false" layoutX="48.0" layoutY="184.0" onAction="#handleDatePickerAction" prefHeight="25.0" prefWidth="244.0" promptText="Select Current Revision Date" />
-                        <Button fx:id="nextButton" layoutX="250.0" layoutY="241.0" onAction="#selectNextBtn" prefHeight="25.0" prefWidth="207.0" text="Next" />
+                        <TextField fx:id="oldRevisionFileTextField" disable="true" editable="false" layoutX="48.0" layoutY="42.0" prefHeight="25.0" prefWidth="370.0" promptText="Select old revision file" style="-fx-border-color: #32de84; -fx-prompt-text-fill: black;" />
+                        <Button fx:id="oldRevisionBtn"  layoutX="457.0" layoutY="42.0" onAction="#selectOldRevisionFile" prefHeight="25.0" prefWidth="139.0" text="Select Old Rev PDF"/>
+                        <TextField fx:id="newRevisionFileTextField" disable="true" editable="false" layoutX="48.0" layoutY="91.0" prefHeight="25.0" prefWidth="370.0" promptText="Select new revision file" style="-fx-border-color: #32de84; -fx-prompt-text-fill: black;" />
+                        <Button fx:id="newRevisionButton" layoutX="457.0" layoutY="91.0" onAction="#selectNewRevisionFile" prefHeight="25.0" prefWidth="139.0" text="Select New Rev PDF" />
+                        <TextField fx:id="textWorkingPath" disable="true" editable="false" layoutX="48.0" layoutY="139.0" prefHeight="25.0" prefWidth="370.0" promptText="Select Working Folder" style="-fx-border-color: #32de84; -fx-prompt-text-fill: black;" />
+                        <Button fx:id="btnWorkingPath" disable="true" layoutX="457.0" layoutY="139.0" mnemonicParsing="false" onAction="#selectWorkingPath" prefHeight="25.0" prefWidth="139.0" text="Select Working Folder" />
+                        <DatePicker fx:id="revdatePicker" disable="true" editable="false" layoutX="48.0" layoutY="184.0" onAction="#handleDatePickerAction" prefHeight="25.0" prefWidth="244.0" promptText="Select Current Revision Date" style="-fx-border-color: #32de84; -fx-prompt-text-fill: black;" />
+                        <Button fx:id="nextButton" layoutX="250.0" layoutY="241.0" onAction="#selectNextBtn" prefHeight="25.0" prefWidth="207.0" text="Generate Revision Bar" />
                      </children>
                   </Pane>
                   <Pane fx:id="pane2" disable="true" layoutX="31.0" layoutY="35.0" prefHeight="449.0" prefWidth="688.0" visible="false">
@@ -108,7 +109,7 @@
                         <Button fx:id="oldRevBtn" layoutX="457.0" layoutY="42.0" onAction="#oldRevFileSelect" prefHeight="25.0" prefWidth="139.0" text="Select" />
                         <TextField fx:id="newRevTextView" disable="true" editable="false" layoutX="48.0" layoutY="91.0" prefHeight="25.0" prefWidth="370.0" promptText="Select new revision file" />
                         <Button fx:id="newRevBtn" layoutX="457.0" layoutY="91.0" onAction="#newRevFileSelect" prefHeight="25.0" prefWidth="139.0" text="Select" />
-                        <Button fx:id="getResultBtn" layoutX="250.0" layoutY="150.0" onAction="#getResult" prefHeight="25.0" prefWidth="207.0" text="Next" />
+                        <Button fx:id="getResultBtn" layoutX="250.0" layoutY="150.0" onAction="#getResult" prefHeight="25.0" prefWidth="207.0" text="Get Revision Changes" />
                      </children>
                   </Pane>
                   <Pane fx:id="pane3" disable="true" layoutX="31.0" layoutY="35.0" prefHeight="449.0" prefWidth="688.0" visible="false">
@@ -124,4 +125,8 @@
          </children>
       </Pane>
    </children>
+ <!--  <stylesheets> -->
+      <!-- Other stylesheets -->
+   <!--  <URL value="@fullpackstyling.css" /> -->
+   <!-- </stylesheets> -->
 </AnchorPane>

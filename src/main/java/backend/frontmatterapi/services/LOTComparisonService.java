@@ -1,13 +1,11 @@
 package backend.frontmatterapi.services;
 import backend.frontmatterapi.models.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 public class LOTComparisonService {
+    UtilityFunctions utilityFunctions = new UtilityFunctions();
     public Optional<ArrayList<String>> filterUnwantedLinesFromLatestLotLoi(List<String> lines){
         int N = lines.size();
         ArrayList<String> finalList = new ArrayList<>();
@@ -15,9 +13,8 @@ public class LOTComparisonService {
             String s = lines.get(i);
             if(s.contains("cover page") || s.contains("COLLINS")
                     || s.contains("PART OF") || s.contains("COMPONENT")
-                    || s.contains("LIST OF") || s.contains("FIGURE") || s.contains("US")
-                    || s.contains("VOLUME") || s.contains("LOI") || s.contains("LOT")
-                    || s.contains("TABLE"))
+                    || s.contains("TABLE")  || s.contains("US Export")
+                    || s.contains("VOLUME") || s.contains("LOT-") || s.contains("PAGE") || s.contains("LIST OF TABLES"))
             {
                 continue;
             }
@@ -32,232 +29,11 @@ public class LOTComparisonService {
 
         return Optional.of(finalList);
     }
-    /* Getting pageNumber, pageblock, tableNumber and title from firstLine, pagenumber will
-    be empty if the title goes to multiline */
-    public LotItem getNumberTitleAndPageNumberofFirstLine(String s){
-        int N = s.length();
-        LotItem lotItem = new LotItem();
-        StringBuilder sb = new StringBuilder();
-        boolean isTitleFound =  false;
-        int i=0;
-        if(s.startsWith("IPL")){
-            if(s.charAt(3) == '*'){
-                i = 4;
-            }
-            else{
-                sb.append("IPL ");
-                i=4;
-            }
-        }
-        while (i<N){
-            if(s.charAt(i) == ' ' && (!sb.isEmpty())){
-                lotItem.setTableNumber(sb.toString().trim());
-                lotItem.setPageblock(getPageBlock(lotItem.getTableNumber()));
-                sb = new StringBuilder();
-                i= i+1;
-                break;
-            }
-            sb.append(s.charAt(i));
-            i++;
-
-        }
-        while(i<N){
-            char ch = s.charAt(i);
-            if(ch == '.' && !sb.isEmpty()){
-                lotItem.setTableTitle(sb.toString().trim());
-                sb = new StringBuilder();
-                isTitleFound = true;
-            }
-            else if(ch == '.'){
-                i++;
-                continue;
-            }
-            else {
-                sb.append(ch);
-            }
-
-            i++;
-        }
-        if(!sb.isEmpty()){
-            if(isTitleFound == false){
-                lotItem.setTableTitle(sb.toString().trim());
-            }
-            else{
-                lotItem.setPageNumber(sb.toString().trim());
-            }
-        }
-        /* If lotItem.getPageNumber == null : Additional check to find whether the last characters of the String is
-        pagenumber or is it part of table title  */
-
-        if(lotItem.getPageNumber() == null){
-            sb = new StringBuilder();
-            String str = lotItem.getTableTitle();
-            N = str.length();
-            int idx = N-1;
-            for(i=N-1; i>=0; i--){
-                if(str.charAt(i)>='0' && str.charAt(i)<='9'){
-                    sb.append(str.charAt(i));
-                }
-
-                else{
-                    idx = i;
-                    break;
-                }
-            }
-            if(sb.isEmpty())
-                return lotItem;
-            try{
-                sb = sb.reverse();
-                int num = Integer.parseInt(sb.toString());
-                if(lotItem.getPageblock().equals(getPageBlock(sb.toString()))){
-                    lotItem.setTableTitle(lotItem.getTableTitle().substring(0, idx+1).trim());
-                    lotItem.setPageNumber(sb.toString());
-                }
-                else
-                    return lotItem;
-            } catch (NumberFormatException e) {
-                return lotItem;
-            }
-        }
-
-
-        return lotItem;
-    }
-    public String getPageBlock(String str){
-        if(str.startsWith("IPL"))
-            return "ILLUSTRATED PARTS LIST";
-        int tableNumber = Integer.parseInt(str);
-        if(tableNumber>=1 && tableNumber<=999)
-            return "DESCRIPTION AND OPERATION";
-        else if(tableNumber>=1001 && tableNumber<=1999)
-            return "TESTING AND FAULT ISOLATION";
-        else if(tableNumber>=2001 && tableNumber<=2999)
-            return "SCHEMATIC AND WIRING DIAGRAMS";
-        else if(tableNumber>=3001 && tableNumber<=3999)
-            return "DISASSEMBLY";
-        else if(tableNumber>=4001 && tableNumber<=4999)
-            return "CLEANING";
-        else if(tableNumber>=5001 && tableNumber<=5999)
-            return "INSPECTION/CHECK";
-        else if(tableNumber>=6001 && tableNumber<=6999)
-            return "REPAIR";
-        else if(tableNumber>=7001 && tableNumber<=7999)
-            return "ASSEMBLY";
-        else if(tableNumber>=8001 && tableNumber<=8999)
-            return "FITS AND CLEARANCES";
-        else if(tableNumber>=9001 && tableNumber<=9999)
-            return "SPECIAL TOOLS, FIXTURES, EQUIPMENT, AND CONSUMABLES";
-        else if(tableNumber>=10001 && tableNumber<=10999)
-            return "ILLUSTRATED PARTS LIST";
-        else if(tableNumber>=11001 && tableNumber<=11999)
-            return "SPECIAL PROCEDURES";
-        else if(tableNumber>=12001 && tableNumber<=12999)
-            return "REMOVAL";
-        else if(tableNumber>=13001 && tableNumber<=13999)
-            return "INSTALLATION";
-        else if(tableNumber>=14001 && tableNumber<=14999)
-            return "SERVICING";
-        else if(tableNumber>=15001 && tableNumber<=15999)
-            return "STORAGE INCLUDING TRANSPORTATION";
-        else if(tableNumber>=16001 && tableNumber<=16999)
-            return "REWORK";
-        return "Not valid";
-    }
-    private static boolean matchesPattern(String input, String patternToMatch) {
-        // Escape any special characters in the pattern
-        return input.matches(patternToMatch);
-    }
-    public ArrayList<String> preprocessFilteredLoiList(ArrayList<String> filteredList){
-        int N = filteredList.size();
-        int i=N-1;
-        int iplEnd = -1;
-        while(i>=0){
-            String str = filteredList.get(i).trim();
-            int n = str.length();
-            if(matchesPattern(str.substring(n - 6, n), " 10\\d{3}") && iplEnd == -1){
-                iplEnd = i;
-                i--;
-            }
-            else if(!matchesPattern(str.substring(n - 5, n), "\\s\\d{4}")){
-                i--;
-                continue;
-            }
-            break;
-        }
-        if(i==N-1)
-            return filteredList;
-        ArrayList<String> newFilteredList = new ArrayList<>();
-        for(int j=0; j<=i; j++){
-            newFilteredList.add(filteredList.get(j));
-        }
-        newFilteredList.add(filteredList.get(i+1));
-        i=i+2;
-        while(i<=iplEnd){
-            String str = filteredList.get(i-1);
-            int n = str.length();
-            if(matchesPattern(str.substring(n - 6, n), " 10\\d{3}")){
-                newFilteredList.add(filteredList.get(i));
-            }
-            else{
-                newFilteredList.set(newFilteredList.size()-1, newFilteredList.get(newFilteredList.size()-1) + " " + filteredList.get(i));
-            }
-            i++;
-        }
-        while (i<N){
-            newFilteredList.add(filteredList.get(i));
-            i++;
-        }
-        for(int j=0; j< newFilteredList.size(); j++){
-            String str = newFilteredList.get(j);
-            int n = str.length();
-            if(matchesPattern(str.substring(n - 6, n), " 10\\d{3}") && !str.startsWith("IPL")){
-                newFilteredList.set(j, "IPL*" + str);
-            }
-        }
-        return newFilteredList;
-    }
-    public Optional<ArrayList<String>> makeMultilineTitlesSingleline(ArrayList<String> filteredList){
-        ArrayList<String> preprocessed = preprocessFilteredLoiList(filteredList); // Added to add IPL suffix if missing in old List of illustration
-        int N = preprocessed.size();
-        if(N==0)
-            return Optional.of(null);
-        ArrayList<String> ans = new ArrayList<>();
-        ans.add(preprocessed.get(0));
-        LotItem prevLoiItem = getNumberTitleAndPageNumberofFirstLine(preprocessed.get(0));
-        for(int i=1; i<N; i++){
-            if(prevLoiItem.getPageNumber() == null){
-                ans.set(ans.size()-1, ans.get(ans.size()-1)+" " + preprocessed.get(i));
-            }
-            else
-                ans.add(preprocessed.get(i));
-            prevLoiItem = getNumberTitleAndPageNumberofFirstLine(ans.get(ans.size()-1));
-
-        }
-
-        return Optional.of(ans);
-    }
-    //    public Optional<ArrayList<LoiPageblockItem>> getPageblockwiseIllustrations(ArrayList<String> formattedLoi){
-//        ArrayList<LoiPageblockItem> ans = new ArrayList<>();
-//        LoiPageblockItem prev = null;
-//        for(int i=0; i<formattedLoi.size(); i++){
-//            String str = formattedLoi.get(i);
-//            LotItem lotItem = getNumberTitleAndPageNumberofFirstLine(str);
-//            if(prev == null || !prev.getPageblockName().equals(lotItem.getPageblock())){
-//               LoiPageblockItem loiPageblockItem = new LoiPageblockItem(lotItem.getPageblock());
-//               loiPageblockItem.getListOfIllustrations().add(lotItem);
-//               prev = loiPageblockItem;
-//               ans.add(prev);
-//            }
-//            else
-//                prev.getListOfIllustrations().add(lotItem);
-//        }
-//        return Optional.of(ans);
-//    }
     public Optional<HashMap<String, LotPageblockItem>> getPageblockwiseTables(ArrayList<String> formattedLot){
         HashMap<String, LotPageblockItem> ans = new HashMap<>();
         for(int i=0; i<formattedLot.size(); i++){
             String str = formattedLot.get(i);
-            LotItem lotItem = getNumberTitleAndPageNumberofFirstLine(str);
+            LotItem lotItem = getLoiItemFromSingleLineString(str);
             if(ans.containsKey(lotItem.getPageblock())){
                 ans.get(lotItem.getPageblock()).getListOfTables().add(lotItem);
             }
@@ -330,7 +106,6 @@ public class LOTComparisonService {
         return Optional.of(ans);
     }
     public void compareLotAutomation(HashMap<String, LotPageblockItem> oldLot, HashMap<String, LotPageblockItem> newLot, HashMap<String, ArrayList<FmChangeItem>> map){
-        ArrayList<String> ans = new ArrayList<>();
         for(String s: newLot.keySet()){
             if(oldLot.containsKey(s)){
                 LotPageblockItem oldLotPageblockItem = oldLot.get(s);
@@ -343,15 +118,24 @@ public class LOTComparisonService {
                 while(i<n && j<m){
                     LotItem lotItemOld = oldListOfTables.get(i);
                     LotItem lotItemNew = newListOfTables.get(j);
-                    if(lotItemNew.getTableTitle().toLowerCase().contains("deleted")){
+                    if(lotItemOld.getTableTitle().toLowerCase().contains("delete")){
                         i++;
-                    }
-                    else if (lotItemOld.getTableNumber().equals(lotItemNew.getTableNumber())) {
-                        if (lotItemOld.getPageNumber().equals(lotItemNew.getPageNumber())) {
-                            addIntoTheMap(map, fmChangeItemBuilder(lotItemNew));
-                            i++;
+                        if(lotItemNew.getTableTitle().toLowerCase().contains("delete")){
+                            //This "if" condition is added to support the Incremental revision, where the pageblock is not impacted we
+                            //won't remove the deleted tables.
                             j++;
                         }
+                    }
+                    else if(lotItemNew.getTableTitle().toLowerCase().contains("delete")){
+                        i++;
+                        j++;
+                    }
+                    else if (lotItemOld.getTableNumber().equals(lotItemNew.getTableNumber())) {
+                        if (!lotItemOld.getPageNumber().equals(lotItemNew.getPageNumber())) {
+                            addIntoTheMap(map, fmChangeItemBuilder(lotItemNew));
+                        }
+                        i++;
+                        j++;
                     } else if (!(lotItemOld.getTableNumber().equals(lotItemNew.getTableNumber()))) {
                         addIntoTheMap(map, fmChangeItemBuilder(lotItemNew));
                         i++;
@@ -361,20 +145,11 @@ public class LOTComparisonService {
                 }
                 while(j<m){
                     LotItem lotItemNew = newListOfTables.get(j);
-                    addIntoTheMap(map, fmChangeItemBuilder(lotItemNew));
+                    if(lotItemNew.getTableNumber().toLowerCase().contains("delete"))
+                        addIntoTheMap(map, fmChangeItemBuilder(lotItemNew));
                     j++;
                 }
 
-            }
-            else{
-                LotPageblockItem lotPageblockItem = newLot.get(s);
-                ArrayList<LotItem> listOfTables = lotPageblockItem.getListOfTables();
-                for(LotItem lotItem: listOfTables){
-                    ans.add("Add Revbar for: {"
-                            + lotItem.getPageblock()
-                            +"} Fig.No: <" + lotItem.getTableNumber() +"> |"
-                            + lotItem.getTableTitle() + "|.");
-                }
             }
         }
     }
@@ -395,5 +170,83 @@ public class LOTComparisonService {
         fmChangeItem.setPageblock(lotItemNew.getPageblock());
         fmChangeItem.setFrontMatterType(FrontMatterType.TABLE);
         return fmChangeItem;
+    }
+    public Optional<ArrayList<String>> makeMultilineTitlesSinglelineVersion1(ArrayList<String> filteredList){
+        if(filteredList.isEmpty())
+            return Optional.empty();
+        int N = filteredList.size();
+        LotItem nextLine = getLotItemFromLastLine(filteredList.get(N-1).trim());
+        Stack<String> list = new Stack<>();
+        list.push(filteredList.get(N-1).trim());
+        for(int i=N-2; i>=0; i--){
+            if(nextLine.getTableNumber() == null){
+                String mergedLine = filteredList.get(i).trim() + " " + list.pop();
+                nextLine = getLotItemFromLastLine(mergedLine);
+                list.push(mergedLine);
+            }
+            else{
+                list.push(filteredList.get(i).trim());
+                nextLine = getLotItemFromLastLine(filteredList.get(i).trim());
+            }
+
+        }
+        ArrayList<String> ans = new ArrayList<>();
+        while(!list.isEmpty()){
+            ans.add(list.pop());
+        }
+        return Optional.of(ans);
+    }
+    public LotItem getLotItemFromLastLine(String s){
+        LotItem lotItem = new LotItem();
+        int N = s.length();
+        int i = N-1;
+        while(i>=0){
+            if(s.charAt(i) == ' '){
+                lotItem.setPageNumber(s.substring(i+1).trim());
+                break;
+            }
+            i--;
+        }
+        lotItem.setPageblock(utilityFunctions.getPageBlockFromPageNumber(lotItem.getPageNumber()));
+        PgblckRegexPattern pgblckRegexPattern = utilityFunctions.getPatternByPageblock(lotItem.getPageblock());
+        for(String pattern: pgblckRegexPattern.getPatterns()){
+            String tableNumber = utilityFunctions.getMatchingSubstring(s, pattern);
+            if(tableNumber != null){
+                lotItem.setTableNumber(tableNumber);
+                break;
+            }
+        }
+        return lotItem;
+    }
+    public LotItem getLoiItemFromSingleLineString(String str){ // This Method returns a Lot item from a String which has all 3 information.
+        int i=0;
+        LotItem lotItem = new LotItem();
+        if(str.startsWith("IPL "))
+            i = 4;
+        while(i < str.length()){
+            if(str.charAt(i) == ' '){
+                lotItem.setTableNumber(str.substring(0, i));
+                i++;
+                break;
+            }
+            i++;
+        }
+        int j = str.length()-1;
+        while(j>i){
+            if(str.charAt(j) == ' '){
+                lotItem.setPageNumber(str.substring(j+1));
+                j--;
+                break;
+            }
+            j--;
+        }
+        while(j>i){
+            if(str.charAt(j) != '.')
+                break;
+            j--;
+        }
+        lotItem.setTableTitle(utilityFunctions.removeExtraSpaceFromTitle(str.substring(i, j+1).trim()));
+        lotItem.setPageblock(utilityFunctions.getPageBlockFromPageNumber(lotItem.getPageNumber()));
+        return lotItem;
     }
 }
